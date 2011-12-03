@@ -58,20 +58,24 @@
 (require 'sage)
 (require 'sage-mode)
 
-(defvar sage-view-latex-head
+(defcustom sage-view-latex-head
   "\\documentclass{article}
 \\usepackage[active, tightpage, pdftex, displaymath]{preview}
 \\usepackage{amstext}
 \\begin{document}
 \\begin{preview}
 \\begin{math}\n"
-  "String to be inserted at the top of a LaTeX document.")
+  "String to be inserted at the top of a LaTeX document."
+  :type 'string
+  :group 'sage-view)
 
-(defvar sage-view-latex-tail
+(defcustom sage-view-latex-tail
   "\n\\end{math}
 \\end{preview}
 \\end{document}\n"
-  "String to be inserted at the end of a LaTeX document.")
+  "String to be inserted at the end of a LaTeX document."
+  :type 'string
+  :group 'sage-view)
 
 (defvar sage-view-start-string "<html><span class=\"math\">"
   "HTML tags that identify the begining of a math formula in Sage
