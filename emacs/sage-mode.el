@@ -61,6 +61,7 @@
 (require 'comint)
 (require 'ansi-color)
 (require 'compile)
+(require 'help-mode)
 
 ;;;_ + SAGE mode key bindings
 
