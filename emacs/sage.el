@@ -32,7 +32,7 @@
 
 ;;; Code:
 
-(load "sage-load")
+(load "sage-load" t)
 
 (defcustom inferior-sage-prompt (rx line-start (1+ (and (or "sage:" ">>>" "....." "..." "(Pdb)" "ipdb>" "(gdb)") " ")))
   "Regular expression matching the SAGE prompt."
@@ -170,6 +170,13 @@ and `sage-view-scale'."
   :type 'number
   :group 'sage-view)
 
+;; If not being loaded, we must be evaluating it from within this file
+(defvar sage-autoloads-location
+  "Directory where autoloads should come from and be created."
+  (file-name-directory
+   (or load-file-name
+       (buffer-file-name))))
+
 ;; Generate autoload for sage elisp files
 (defun sage-update-autoloads nil
   "Generate autoloads for sage elisp files.
@@ -177,7 +184,7 @@ and `sage-view-scale'."
 WARNING: do not use this unless you are distributing a new
 version of `sage-mode'!"
   (interactive)
-  (let ((generated-autoload-file "~/emacs/sage/emacs/sage-load.el"))
-    (update-directory-autoloads "~/emacs/sage/emacs")))
+  (let ((generated-autoload-file (concat sage-autoloads-location "sage-load.el")))
+    (update-directory-autoloads sage-autoloads-location)))
 
 (provide 'sage)
