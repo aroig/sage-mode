@@ -44,7 +44,24 @@
   :group 'sage
   :type 'integer)
 
-(defcustom sage-command (expand-file-name "~/bin/sage")
+(defun sage-guess-command ()
+  "Tries to guess what value to use for `sage-command'.
+It uses sage in PATH if it can find it, otherwise on OS X it
+attempts to find and use Sage.app.  It falls back to ~/bin/sage."
+  (car (split-string
+        (flet ((nill-if-empty (s) (and (> (length s) 2) s)))
+          (or (nill-if-empty (shell-command-to-string "which sage 2>/dev/null"))
+              (and (eq system-type 'darwin)
+                   (nill-if-empty
+                    (shell-command-to-string
+                     (concat "osascript -e 'tell app \"Finder\" to "
+                             "POSIX path of "
+                             "(application file id \"org.sagemath.Sage\" as alias) "
+                             "& \"Contents/Resources/sage/sage\"' 2>/dev/null "))))
+              (expand-file-name "~/bin/sage")))
+        "\n")))
+
+(defcustom sage-command (sage-guess-command)
   "*Actual command used to run sage.
 Additional arguments are added when the command is used by `run-sage' et al."
   :group 'sage
