@@ -44,6 +44,7 @@
   :group 'sage
   :type 'integer)
 
+(eval-when-compile (require 'cl))
 (defun sage-guess-command ()
   "Tries to guess what value to use for `sage-command'.
 It uses sage in PATH if it can find it, otherwise on OS X it
