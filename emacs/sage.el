@@ -190,10 +190,10 @@ and `sage-view-scale'."
 
 ;; If not being loaded, we must be evaluating it from within this file
 (defvar sage-autoloads-location
-  "Directory where autoloads should come from and be created."
   (file-name-directory
    (or load-file-name
-       (buffer-file-name))))
+       (buffer-file-name)))
+  "Directory where autoloads should come from and be created.")
 
 ;; Generate autoload for sage elisp files
 (defun sage-update-autoloads nil
