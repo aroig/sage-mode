@@ -126,6 +126,9 @@
   "Inferior SAGE"
   "Major mode for interacting with an inferior SAGE process."
 
+  (when (and (markerp comint-last-output-start)
+  	     (not (marker-buffer comint-last-output-start)))
+    (set-marker comint-last-output-start (point-min)))
   (sage-set-buffer (current-buffer))
 
   (setq comint-prompt-regexp inferior-sage-prompt)
@@ -541,7 +544,7 @@ buffer for a list of commands.)"
 			(sage-create-new-sage cmd)))
     (set-default 'sage-buffer sage-buffer) ; update defauls
     (set-default 'python-buffer python-buffer)
-    
+
     (with-current-buffer sage-buffer
       (unless noshow (pop-to-buffer sage-buffer)) ; show progress
       (run-hooks 'sage-startup-before-prompt-hook)
@@ -557,13 +560,13 @@ buffer for a list of commands.)"
     (accept-process-output nil 0 1)
     (sage-send-command "" t)
     (accept-process-output nil 0 1)
-    
+
     (when (sage-mode-p)
       ;; If we're coming from a sage-mode buffer, update inferior buffer
       (message "Buffer %s will use sage %s" (current-buffer) sage-buffer)
       (sage-set-buffer sage-buffer))
     (unless noshow (pop-to-buffer sage-buffer))))
-    
+
 (defun sage-set-buffer-name ()
   (interactive)
   "Change the current SAGE buffer name to include the current branch."
@@ -610,7 +613,7 @@ buffer for a list of commands.)"
   "SAGE"
   "Major mode for editing SAGE files.
 
-The major entry points are: 
+The major entry points are:
 
 `sage', to spawn a new sage session.
 
@@ -652,7 +655,7 @@ and restart a fresh inferior sage in an existing buffer.
 
 (defun sage-quit-debugger ()
   "Quit debugger if looking at a debugger prompt."
-  
+
   (when (sage-last-prompt-is-debugger)
     (with-current-buffer sage-buffer
       (comint-kill-input)
@@ -784,7 +787,7 @@ Match group 1 will be replaced with devel/sage-branch")
 		 (branch (or (file-symlink-p (concat base "sage")) "sage")))
 	    (concat base branch (substring filename (match-end 1))))
 	filename))))
- 
+
 (defun sage-jump-to-development-version ()
   "Jump to current branch version of current FILE if we're in site-packages version."
   (interactive)
@@ -896,7 +899,7 @@ Adapted from a patch posted to the python-mode trac."
 				  (concat (file-name-nondirectory d2) "." f)))
 		     (list d f))))))
     (funcall rec (file-name-directory file)
-	     (file-name-sans-extension (file-name-nondirectory file))))) 
+	     (file-name-sans-extension (file-name-nondirectory file)))))
 
 ;;; Replace original `python-load-file' to use xreload and packages.
 (defadvice python-load-file
@@ -1013,6 +1016,9 @@ If ECHO-INPUT is non-nil, echo input in process buffer."
 	    (insert command)
 	    (comint-send-input nil t)
 	    (insert old)))
+      ;; Work around bug in python-send-command or compilation-forget-errors
+      (unless (hash-table-p compilation-locs)
+	(compilation-minor-mode 1))
       (python-send-command command))))
 
 (defun python-send-receive-to-buffer (command buffer &optional echo-output)
@@ -1113,7 +1119,7 @@ See `try-completion' and `all-completions' for interface details."
 	    (cdr ipython-completing-read-symbol-cache)))
     ;; Complete as necessary
     (cond ((eq action 'lambda) ; action is 'lambda
-	   (test-completion string completions)) 
+	   (test-completion string completions))
 	  (action   ; action is t
 	   (pcomplete-uniqify-list (all-completions string completions predicate)))
 	  (t	    ; action is nil
@@ -1174,7 +1180,7 @@ See `completing-read' for REQUIRE-MATCH."
 	(while (re-search-forward "\\([A-Z][^a-z]+\\):" nil t) ;; t means no error
 	  (toggle-read-only 0)
 	  (add-text-properties (match-beginning 1) (match-end 1) '(face bold)))
-	
+
 	;; make File: a link
 	(goto-char (point-min))
 	(while (re-search-forward "File:\\s-*\\(.*\\)" nil t) ;; t means no error
@@ -1199,7 +1205,7 @@ Interactively, prompt for SYMBOL."
 	      raw-contents))
 	 (temp-buffer-show-hook ipython-describe-symbol-temp-buffer-show-hook))
     ;; XXX Handle exceptions; perhaps (with-python-output ...) or similar
-    ;; Handle symbol not found gracefully  
+    ;; Handle symbol not found gracefully
     (when (string-match ipython-describe-symbol-not-found-regexp raw-contents)
       (error "Symbol not found"))
     (when (= 0 (length help-contents))
@@ -1361,7 +1367,7 @@ otherwise."
       nil)
 
   (set (make-variable-buffer-local 'pcomplete-default-completion-function)
-       'pcomplete-sage-default-completion)       
+       'pcomplete-sage-default-completion)
   (set (make-variable-buffer-local 'pcomplete-command-completion-function)
        'pcomplete-sage-default-completion)
   (set (make-variable-buffer-local 'pcomplete-parse-arguments-function)
@@ -1431,7 +1437,7 @@ Interactively, try to find current method at point."
 	 (module (cdr directory-module))
 	 (command (format "sage.misc.sagetest.sagetest(%s)" module))
 	 (compilation-error-regexp-alist '(sage-test sage-build)))
-    (with-temp-buffer 
+    (with-temp-buffer
       (compile (eshell-flatten-and-stringify args))
       (python-send-receive-to-buffer command (current-buffer)))))
 
