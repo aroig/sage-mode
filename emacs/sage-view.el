@@ -4,7 +4,7 @@
 ;; Copyright (C) 2008  Matthias Meulien, Nick Alexander
 
 ;; Authors: Matthias Meulien <matthias.meulien@xlim.fr>, Nick Alexander
-;; <ncalexander@gmail.com> 
+;; <ncalexander@gmail.com>
 ;; Keywords: sage math image
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -94,12 +94,12 @@
 
 See also `sage-view-process-overlay'."
   (let* ((latex (concat (overlay-get ov 'file-sans-extension) ".tex"))
-	 (options (append 
+	 (options (append
 		   (list (concat "--output-directory=" sage-view-dir-name)
 			 (concat "-interaction=" "nonstopmode")
 			 (concat "-output-format=" "pdf")
 			 latex)))
-	 (proc (apply 'start-process 
+	 (proc (apply 'start-process
 		      (append (list "latex->pdf" nil "latex") options))))
     (process-put proc 'overlay ov)
     (set-process-sentinel proc 'sage-view-latex->pdf-sentinel)))
@@ -121,7 +121,7 @@ See also `sage-view-process-overlay'."
 			 (concat "-r" (sage-view-compute-resolution scale))
 			 pdf)))
 	 (proc (apply 'start-process
-		      (append 
+		      (append
 		       (list "pdf->png" "*sage-view*" sage-view-gs-command)
 		       options))))
     (process-put proc 'overlay ov)
@@ -136,7 +136,7 @@ See also `sage-view-process-overlay'."
 	 (base (overlay-get ov 'file-sans-extension)))
     (if (string-match "finished" event)
 	(sage-view-pdf->png ov)
-      (overlay-put ov 'display 
+      (overlay-put ov 'display
 		   (concat "Conversion failed (see " base ".log" ")")))))
 
 (defun sage-view-pdf->png-sentinel (proc event)
@@ -151,7 +151,7 @@ See also `sage-view-process-overlay'."
 			   png (file-readable-p png))
 		  (append (list 'image :type 'png :file png :margin sage-view-margin)))))
     (if (not image)
-	(overlay-put ov 'display 
+	(overlay-put ov 'display
 		     (concat "Conversion failed (see " base ".log" ")"))
       (overlay-put ov 'display image))
     (sit-for 0)))
@@ -173,7 +173,7 @@ conversion is successful, a conversion process from PDF to PNG
 starts. When it ends, `sage-view-pdf->png-sentinel' is called: If
 the last conversion is successful, OV displays the resulting
 image."
-  (let* ((base (expand-file-name 
+  (let* ((base (expand-file-name
 		(make-temp-name "sage-view_") sage-view-dir-name))
 	 (file (concat base ".tex")))
     (with-temp-file file
@@ -184,7 +184,7 @@ image."
     (sage-view-latex->pdf ov)))
 
 (defun sage-view-output-filter-process-inline-output (string)
-  "Substitute overlays to inline output. 
+  "Substitute overlays to inline output.
 
 Each region delimited by `sage-view-start-string' and
 `sage-view-final-string' is replaced by an overlay.
@@ -220,7 +220,7 @@ found by looking for a particular png file in directory
 This function expects the buffer to be narrowed to just the
 current output; see `sage-view-output-filter' for how to do
 that."
-  ;; we need to foil emacs' image cache, which doesn't reload files with the same name  
+  ;; we need to foil emacs' image cache, which doesn't reload files with the same name
   (let* ((pngname (format "%s/sage-view.png" sage-view-dir-name))
 	 (base (expand-file-name (make-temp-name "sage-view-plot_") sage-view-dir-name))
 	 (pngname2 (concat base ".png")))
@@ -236,9 +236,9 @@ that."
       ;; (message "Renamed %s to %s" pngname pngname2)
 
       (goto-char (point-max))
-      (let ((im (create-image pngname2 'png))) ;; adding a margin screws this up
-	(setq sage-view-inline-plot-overlay
-	      (make-overlay (- (point) 1) (- (point) 0) nil nil nil))
+      (let ((im (create-image pngname2 'png))
+	    (sage-view-inline-plot-overlay
+	     (make-overlay (- (point) 1) (- (point) 0) nil nil nil))) ;; adding a margin screws this up
 	(overlay-put sage-view-inline-plot-overlay 'display im)
 	(overlay-put sage-view-inline-plot-overlay 'before-string "\n\n") ;; help alignment as much as possible
 	(overlay-put sage-view-inline-plot-overlay 'after-string "\n\n")  ;; but emacs doesn't handle this right IMHO
@@ -285,7 +285,7 @@ when `sage-view' mode is enabled and sage is running."
   (interactive)
   (setq sage-view-inline-plots-enabled t)
   (python-send-receive-multiline "sage.plot.plot.DOCTEST_MODE = True;")
-  (python-send-receive-multiline (format "sage.plot.plot.DOCTEST_MODE_FILE = '%s';" 
+  (python-send-receive-multiline (format "sage.plot.plot.DOCTEST_MODE_FILE = '%s';"
 					 (format "%s/sage-view.png" sage-view-dir-name))))
 
 ;;;###autoload
@@ -307,7 +307,7 @@ writable directory."
   (unless (and sage-view-dir-name
 	       (file-directory-p sage-view-dir-name)
 	       (file-writable-p sage-view-dir-name))
-    (setq sage-view-dir-name 
+    (setq sage-view-dir-name
 	  (make-temp-name (expand-file-name "tmp" "~/.sage/temp/")))
     (condition-case err
 	(make-directory sage-view-dir-name)
@@ -322,12 +322,12 @@ writable directory."
 	  (mapc #'delete-file
 		(directory-files sage-view-dir-name t "^sage-view" t))
 	  (delete-directory sage-view-dir-name))
-      (error (message "Deletion of `%s' failed: %s" 
+      (error (message "Deletion of `%s' failed: %s"
 		      sage-view-dir-name (error-message-string err))))))
 
 (defun sage-view-overlay-activep (ov)
   "Check whether there is a valid image associated with OV."
-  (eq (car (overlay-get ov 'display) 'image)))
+  (eq (car (overlay-get ov 'display)) 'image))
 
 (defun sage-view-copy-text (ov)
   "Copy LATEX source of OV into the kill buffer."
@@ -345,7 +345,7 @@ Make sure that there is a valid image associated with OV with
 	 (file (plist-get spec :file))
 	 (name (when (and file (file-readable-p file))
 		 (expand-file-name
-		  (read-file-name "Write image to file: " 
+		  (read-file-name "Write image to file: "
 				 default-directory
 				 "sage-view.png")))))
     (if name
