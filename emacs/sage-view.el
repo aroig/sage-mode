@@ -285,8 +285,14 @@ when `sage-view' mode is enabled and sage is running."
   (interactive)
   (setq sage-view-inline-plots-enabled t)
   (python-send-receive-multiline "sage.plot.plot.DOCTEST_MODE = True;")
-  (python-send-receive-multiline (format "sage.plot.plot.DOCTEST_MODE_FILE = '%s';"
-					 (format "%s/sage-view.png" sage-view-dir-name))))
+  ;; sage 4.7
+  (python-send-receive-multiline
+   (format "sage.plot.plot.DOCTEST_MODE_FILE = '%s/sage-view.png';"
+	   sage-view-dir-name))
+  ;; sage 5.0
+  (python-send-receive-multiline
+   (format "sage.plot.graphics.DOCTEST_MODE_FILE = '%s/sage-view.png';"
+	   sage-view-dir-name)))
 
 ;;;###autoload
 (defun sage-view-disable-inline-plots ()
@@ -296,7 +302,10 @@ when `sage-view' mode is enabled and sage is running."
   (interactive)
   (setq sage-view-inline-plots-enabled nil)
   (python-send-receive-multiline "sage.plot.plot.DOCTEST_MODE = False;")
-  (python-send-receive-multiline (format "sage.plot.plot.DOCTEST_MODE_FILE = None;")))
+  ;; sage 4.7
+  (python-send-receive-multiline "sage.plot.plot.DOCTEST_MODE_FILE = None;")
+  ;; sage 5.0
+  (python-send-receive-multiline "sage.plot.graphics.DOCTEST_MODE_FILE = None;"))
 
 (defun sage-view-create-temp ()
   "Create a temporary directory and set `sage-view-dir-name'
