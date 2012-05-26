@@ -291,7 +291,7 @@ when `sage-view' mode is enabled and sage is running."
 	   sage-view-dir-name))
   ;; sage 5.0
   (python-send-receive-multiline
-   (format "hasattr(sage.plot,'graphics') and sage.plot.graphics.DOCTEST_MODE_FILE = '%s/sage-view.png';"
+   (format "if hasattr(sage.plot,'graphics'): sage.plot.graphics.DOCTEST_MODE_FILE = '%s/sage-view.png';\n"
 	   sage-view-dir-name)))
 
 ;;;###autoload
@@ -305,7 +305,7 @@ when `sage-view' mode is enabled and sage is running."
   ;; sage 4.7
   (python-send-receive-multiline "sage.plot.plot.DOCTEST_MODE_FILE = None;")
   ;; sage 5.0
-  (python-send-receive-multiline "hasattr(sage.plot,'graphics') and sage.plot.graphics.DOCTEST_MODE_FILE = None;"))
+  (python-send-receive-multiline "if hasattr(sage.plot,'graphics'): sage.plot.graphics.DOCTEST_MODE_FILE = None;\n"))
 
 (defun sage-view-create-temp ()
   "Create a temporary directory and set `sage-view-dir-name'
