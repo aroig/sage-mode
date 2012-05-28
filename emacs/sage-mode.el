@@ -56,7 +56,7 @@
 
 ;;; Code:
 
-(require 'cl)
+(eval-when-compile (require 'cl))
 (require 'python)
 (require 'comint)
 (require 'ansi-color)
@@ -791,8 +791,8 @@ Match group 1 will be replaced with devel/sage-branch")
 (defun sage-jump-to-development-version ()
   "Jump to current branch version of current FILE if we're in site-packages version."
   (interactive)
-  (let ((filename (sage-development-version (buffer-file-name (current-buffer))))
-	(maybe-buf (find-buffer-visiting filename)))
+  (let* ((filename (sage-development-version (buffer-file-name (current-buffer))))
+	 (maybe-buf (find-buffer-visiting filename)))
     (if maybe-buf (pop-to-buffer maybe-buf)
       (find-alternate-file filename))))
 
@@ -1406,8 +1406,8 @@ Interactively, try to find current method at point."
   (interactive
    (append
     (comint-get-source "Load SAGE file: "
-		       python-prev-dir/file python-source-modes t))
-   (list current-prefix-arg))
+		       python-prev-dir/file python-source-modes t)
+    (list current-prefix-arg)))
   (comint-check-source file-name)     ; Check to see if buffer needs saving.
   (setq python-prev-dir/file (cons (file-name-directory file-name)
 				   (file-name-nondirectory file-name)))
@@ -1427,8 +1427,8 @@ Interactively, try to find current method at point."
   (interactive
    (append
     (comint-get-source "Load SAGE file: "
-		       python-prev-dir/file python-source-modes t))
-   (list current-prefix-arg))
+		       python-prev-dir/file python-source-modes t)
+    (list current-prefix-arg)))
   (comint-check-source file-name)     ; Check to see if buffer needs saving.
   (setq python-prev-dir/file (cons (file-name-directory file-name)
 				   (file-name-nondirectory file-name)))
@@ -1449,7 +1449,7 @@ Interactively, try to find current method at point."
   mercurial-bundle-mode
   fundamental-mode
   "Mercurial .hg bundle"
-  "Major mode for interacting with an inferior SAGE process."
+  "Major mode for reading .hg bundle files naturally."
   (completing-read "Against repository: " '("sage-main" "sage-blah" "sage-nuts") nil t "sage-main")
   nil
 )
