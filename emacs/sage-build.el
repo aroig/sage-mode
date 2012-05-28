@@ -25,10 +25,10 @@
 	    ;; (setq killed (looking-at "Process SAGE killed"))
 	    ))
 	(progn
-	  (accept-process-output sprocess 0 1)
+	  (accept-process-output process 0 1)
 	  (message "Trying %s... failed!" msg)
 	  nil)
-      (accept-process-output sprocess 0 1)
+      (accept-process-output process 0 1)
       (message "Trying %s... done." msg)
       t
       )))
