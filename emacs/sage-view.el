@@ -212,6 +212,7 @@ See also `sage-view-output-filter'."
       (overlay-put ov 'keymap map)
       (sage-view-process-overlay ov))))
 
+(autoload 'dired-rename-file "dired-aux")
 (defun sage-view-output-filter-process-inline-plots (string)
   "Generate and place one overlay image for one inline plot,
 found by looking for a particular png file in directory
@@ -225,10 +226,9 @@ that."
 	 (base (expand-file-name (make-temp-name "sage-view-plot_") sage-view-dir-name))
 	 (pngname2 (concat base ".png")))
     ;; (message "Looking for plot at %s..." pngname)
-    (if (not (and pngname
-		  (file-exists-p pngname)
-		  (file-readable-p pngname)))
-	() ;; the not found branch
+    (when (and pngname
+	       (file-exists-p pngname)
+	       (file-readable-p pngname))
       ;; (message "Looking for plot at %s... not found." pngname)
       ;; the found branch
       ;; (message "Looking for plot at %s... found!" pngname)
@@ -242,7 +242,7 @@ that."
 	(overlay-put sage-view-inline-plot-overlay 'display im)
 	(overlay-put sage-view-inline-plot-overlay 'before-string "\n\n") ;; help alignment as much as possible
 	(overlay-put sage-view-inline-plot-overlay 'after-string "\n\n")  ;; but emacs doesn't handle this right IMHO
-      ;; (dired-delete-file pngname2 'always) ;; causes problems with emacs image loading
+	;; (dired-delete-file pngname2 'always) ;; causes problems with emacs image loading
       ))))
 
 (defun sage-view-output-filter (string)
@@ -395,6 +395,8 @@ Make sure that there is a valid image associated with OV with
       `(sage-view-overlay-activep ,ov)])
    ev))
 
+
+;; TODO: require a graphics console before turning it on, or make it possile to turn it on
 ;;;###autoload
 (define-minor-mode sage-view
   "Toggle automatic typesetting of Sage output.
