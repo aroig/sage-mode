@@ -762,7 +762,7 @@ the region \"2\" does not print \"2\"."
 (add-to-list 'auto-mode-alist '("devel/sage.*?\\.py\\'" . sage-mode))
 (add-to-list 'auto-mode-alist '("devel/sage.*?\\.pyx\\'" . pyrex-mode))
 
-(defvar sage-site-packages-regexp "\\(local.*?site-packages.*?\\)/sage"
+(defvar sage-site-packages-regexp "\\(local/lib/python[0-9.]*/site-packages.*?\\)/sage"
   "Regexp to match sage site-packages files.
 
 Match group 1 will be replaced with devel/sage-branch")
