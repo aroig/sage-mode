@@ -478,20 +478,33 @@ See variable `python-buffer'.  Starts a new process if necessary."
 ;;;###autoload
 (defvar sage-run-history nil)
 
-(defun sage-create-new-sage (cmd)
+;; Convert a string to a list of arguments.
+;; Taken from old python.el.
+;; Does not handle quoted whitespace.
+(defun sage-args-to-list (string)
+  (let ((where (string-match "[ \t]" string)))
+    (cond ((null where) (list string))
+	  ((not (= where 0))
+	   (cons (substring string 0 where)
+		 (sage-args-to-list (substring string (+ 1 where)))))
+	  (t (let ((pos (string-match "[^ \t]" string)))
+	       (if pos (sage-args-to-list (substring string pos))))))))
+
+(defun sage-create-new-sage (cmd &optional new)
   (interactive
    (progn
      (let ((default (or cmd sage-command)))
        (list (read-from-minibuffer "Run sage (like this): "
 				   default
 				   nil nil 'sage-run-history
-				   default)))))
+				   default)
+	     current-prefix-arg))))
   (unless cmd
     (setq cmd sage-command))
   (with-current-buffer
       (let* ((sage-buffer-base-name (format "*SAGE-%s*" (sage-current-branch)))
 	     (sage-buffer-name (if new (generate-new-buffer sage-buffer-base-name) sage-buffer-base-name))
-	     (cmdlist (python-args-to-list cmd))
+	     (cmdlist (sage-args-to-list cmd))
 	     ;; Set PYTHONPATH to import module emacs from emacs.py,
 	     ;; but ensure that a user specified PYTHONPATH will
 	     ;; override our setting, so that emacs.py can be
@@ -539,7 +552,7 @@ buffer for a list of commands.)"
   ;; invoked.  Would support multiple processes better.
   (if (not (or new (sage-new-sage-p)))
       (unless noshow (pop-to-buffer sage-buffer))
-    (setq sage-buffer (if (called-interactively-p)
+    (setq sage-buffer (if (called-interactively-p 'all)
 			  (call-interactively 'sage-create-new-sage)
 			(sage-create-new-sage cmd)))
     (set-default 'sage-buffer sage-buffer) ; update defauls
@@ -651,7 +664,10 @@ and restart a fresh inferior sage in an existing buffer.
 ;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.sage\\'" . sage-mode))
 
-(add-to-list 'python-source-modes 'sage-mode)
+(if (boundp 'python-source-modes)
+    (add-to-list 'python-source-modes 'sage-mode)
+  ;; It's only used to help get defaults in some cases
+  (defvar python-source-modes nil))
 
 (defun sage-quit-debugger ()
   "Quit debugger if looking at a debugger prompt."
@@ -925,9 +941,7 @@ module-qualified names."
   (comint-check-source file-name)     ; Check to see if buffer needs saving.
   (setq python-prev-dir/file (cons (file-name-directory file-name)
 				   (file-name-nondirectory file-name)))
-  (with-current-buffer (process-buffer (python-proc)) ;Runs python if needed.
-    ;; Fixme: I'm not convinced by this logic from python-mode.el.
-    (python-send-command
+  (sage-send-command
      (if (string-match "\\.py\\'" file-name)
 	 (let* ((directory-module (python-qualified-module-name file-name))
 		(directory (car directory-module))
@@ -936,7 +950,7 @@ module-qualified names."
 	   (format "emacs.eimport(%S, %S, use_xreload=%s)"
 		   module directory xreload-flag))
        (format "execfile(%S)" file-name)))
-    (message "%s loaded" file-name)))
+    (message "%s loaded" file-name))
 (ad-activate 'python-load-file)
 
 ;;;_* Convenient *programmatic* Python interaction
@@ -1019,7 +1033,7 @@ If ECHO-INPUT is non-nil, echo input in process buffer."
       ;; Work around bug in python-send-command or compilation-forget-errors
       (unless (hash-table-p compilation-locs)
 	(compilation-minor-mode 1))
-      (python-send-command command))))
+      (python-send-string command))))
 
 (defun python-send-receive-to-buffer (command buffer &optional echo-output)
   "Send COMMAND to inferior Python (if any) and send output to BUFFER.
