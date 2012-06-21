@@ -5,10 +5,16 @@
 ;; Author: Nicholas Alexander <ncalexan@pv109055.reshsg.uci.edu>
 ;; Keywords: sage test
 
+
+;;; Commentary:
+;;
+
 (require 'sage)
 (require 'sage-mode)
 
 ;; History of sage-test commands.
+;;; Code:
+
 ;;;###autoload
 (defvar sage-test-history nil)
 
@@ -57,6 +63,7 @@ Set up `compilation-exit-message-function' and run `sage-test-setup-hook'."
   (set (make-local-variable 'compilation-process-setup-function)
        'sage-test-process-setup))
 
+
 (defun sage-default-test-files ()
   (if (sage-mode-p)
       (buffer-file-name)
@@ -91,7 +98,9 @@ easily repeat a sage-test command."
 
   ;; Setting process-setup-function makes exit-message-function work
   ;; even when async processes aren't supported.
-  (compilation-forget-errors)
+  (when (buffer-live-p sage-buffer)
+    (with-current-buffer sage-buffer
+      (compilation-forget-errors)))
   (setq compilation-messages-start nil)
   (compilation-start command-args 'sage-test-mode))
 
@@ -126,7 +135,7 @@ easily repeat a sage-test command."
 
 ;;     (when extra-newline ;; doesn't seem to help
 ;;       (insert "\n"))
-))
+    ))
 
 (defun sage-test-remove-prompts (doctest)
   "Given a doctest snippet, return a string with any leading sage: and ... prompts removed."
@@ -139,7 +148,7 @@ easily repeat a sage-test command."
       ;; remove prompts
       (sage-test-remove-prompts-in-current-buffer)
       (buffer-substring-no-properties (point-min) (point-max)))))
-  
+
 (defun sage-test-doctest-at-point ()
   "Return the doctest at point.
 Expects that point is on the same line as a sage: prompt."
@@ -188,7 +197,7 @@ Helps interactive doctesting of class/module comments."
   (if (not (python-in-string/comment))
       (narrow-to-defun)
     (save-excursion
-      (let ((beg (nth 8 (syntax-ppss)))) ;;  8. character address of start of comment or string; nil if not in one.      
+      (let ((beg (nth 8 (syntax-ppss)))) ;;  8. character address of start of comment or string; nil if not in one.
 	(search-forward "\"\"\"") ;; just go to end of triple quoted string for now, even though it's not prefect
 	(narrow-to-region beg (point))))))
 
@@ -296,3 +305,5 @@ the end of the docstring."
     (goto-char end-point)))
 
 (provide 'sage-test)
+
+;;; sage-test.el ends here
