@@ -193,8 +193,8 @@ Expects that point is on the same line as a sage: prompt."
 (defun sage-test-narrow-to-defun-or-string ()
   "Narrow to the current docstring if possible, otherwise to the surrounding defun.
 Helps interactive doctesting of class/module comments."
-  ;; (message "NARROWING %s" (python-in-string/comment))
-  (if (not (python-in-string/comment))
+  ;; (message "NARROWING %s" (sage-in-string/comment))
+  (if (not (sage-in-string/comment))
       (narrow-to-defun)
     (save-excursion
       (let ((beg (nth 8 (syntax-ppss)))) ;;  8. character address of start of comment or string; nil if not in one.
@@ -207,7 +207,7 @@ in this docstring.
 
 If NOSHOW is nil, display the Sage process buffer."
   (interactive)
-;;   (unless (python-in-string/comment)
+;;   (unless (sage-in-string/comment)
 ;;     (error "Not in a Sage docstring"))
   (save-excursion
     (beginning-of-line)
@@ -232,9 +232,9 @@ If NOSHOW is nil, display the Sage process buffer."
 If NOSHOW is nil, display the Sage process buffer.
 If NOGO is nil, pop to the Sage process buffer."
   (interactive)
-  (unless (python-in-string/comment)
+  (unless (sage-in-string/comment)
     (error "Not in a Sage docstring"))
-  (python-beginning-of-string)
+  (sage-beginning-of-string)
   (re-search-forward sage-test-prompt)
   (ignore-errors
     (while t
