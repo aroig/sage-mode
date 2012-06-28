@@ -57,6 +57,8 @@
 ;;; Code:
 
 (eval-when-compile (require 'cl))
+(eval-when-compile (require 'hippie-exp))
+(eval-when-compile (require 'eshell))
 (require 'python)
 (require 'comint)
 (require 'ansi-color)
@@ -290,12 +292,13 @@ sent normally.")
   (when (or (null symbol) (equal "" symbol))
     (error "No command"))
   (with-output-to-temp-buffer "*sage-apropos*"
-   (with-current-buffer "*sage-apropos*"
-     (python-send-receive-to-buffer (format "apropos('%s')" symbol) "*sage-apropos*")
-     (sage-apropos-mode)
-     (goto-char 0)
-     (insert (format "Sage apropos for %s:\n\n" symbol))
-     t)))
+    (python-send-receive-to-buffer (format "apropos('%s')" symbol) "*sage-apropos*"))
+  (with-current-buffer "*sage-apropos*"
+    (sage-apropos-mode)
+    (goto-char 0)
+    (let ((inhibit-read-only t))
+      (insert (format "Sage apropos for %s:\n\n" symbol)))
+    t))
 
 (defun ipython-handle-magic-**? (proc string &optional match)
   "Handle SAGE apropos **?."
@@ -339,8 +342,8 @@ commands, such as %prun, etc, and magic suffixes, such as ? and
 
 Otherwise, `comint-simple-send' just sends STRING plus a newline."
   (if (and ipython-input-handle-magic-p ; must want to handle magic
-	       (ipython-input-string-is-magic-p string) ; ... be magic
-	       (ipython-input-handle-magic proc string)) ; and be handled
+	   (ipython-input-string-is-magic-p string) ; ... be magic
+	   (ipython-input-handle-magic proc string)) ; and be handled
       ;; To have just an input history creating, clearing new line entered
       (comint-simple-send proc "")
     (comint-simple-send proc string)))	; otherwise, you're sent
@@ -398,9 +401,8 @@ Does not delete the prompt."
 
     ;; now insert text in output buffer
     (let ((output-buffer (get-buffer-create "*sage-output*")))
-      (save-excursion
+      (with-current-buffer output-buffer
 	;; Clear old output -- maybe this is a bad idea?
-	(set-buffer output-buffer)
 	(setq buffer-read-only nil)
 	(erase-buffer)
 	(insert saved))
@@ -410,7 +412,9 @@ Does not delete the prompt."
 
 ;;;_* SAGE process management
 
-(defvaralias 'sage-buffer 'python-buffer)
+(if (boundp 'python-shell-internal-buffer)
+    (defvaralias 'sage-buffer 'python-shell-internal-buffer)
+  (defvaralias 'sage-buffer 'python-buffer))
 ;; (defvar sage-buffer nil
 ;;   "*The current SAGE process buffer.
 
@@ -475,7 +479,7 @@ Does not delete the prompt."
 	    (car (sage-all-inferior-sage-buffers))))))
   (let ((chosen-buffer (with-current-buffer buffer (current-buffer))))
     (setq sage-buffer chosen-buffer)
-    (setq python-buffer chosen-buffer) ; update python-buffer too
+    (setq sage-buffer chosen-buffer) ; update python-buffer too
     (when (sage-mode-p)
       (sage-update-mode-line chosen-buffer))))
 
@@ -499,6 +503,11 @@ See variable `python-buffer'.  Starts a new process if necessary."
 	 ;; otherwise, start a new sage and try again
 	 (run-sage nil sage-command t)
 	 (python-proc))))
+
+;; Use our version of python-proc (even though I have my doubts)
+;; for the new fgallina python.el
+(defun python-shell-internal-get-or-create-process ()
+  (python-proc))
 
 ;; History of sage-run commands.
 ;;;###autoload
@@ -581,7 +590,7 @@ buffer for a list of commands.)"
     (setq sage-buffer (if (called-interactively-p 'all)
 			  (call-interactively 'sage-create-new-sage)
 			(sage-create-new-sage cmd)))
-    (set-default 'sage-buffer sage-buffer) ; update defauls
+    (set-default 'sage-buffer sage-buffer) ; update defaults
     (set-default 'python-buffer python-buffer)
 
     (with-current-buffer sage-buffer
@@ -1098,7 +1107,7 @@ time, it does not handle multi-line input strings at all."
 	(accept-process-output nil 1)))
     ;; Return the output
     (let ((output (buffer-substring-no-properties (point-min) (point-max))))
-      (when (interactive-p)
+      (when (called-interactively-p 'interactive)
 	(message output))
       output)))
 
@@ -1194,7 +1203,7 @@ See `completing-read' for REQUIRE-MATCH."
 
 (defvar ipython-describe-symbol-temp-buffer-show-hook
   (lambda ()				; avoid xref stuff
-    (toggle-read-only 1)
+    (setq buffer-read-only t)
     (setq view-return-to-alist
 	  (list (cons (selected-window) help-return-method))))
   "`temp-buffer-show-hook' installed for `ipython-describe-symbol' output.")
@@ -1218,16 +1227,16 @@ See `completing-read' for REQUIRE-MATCH."
 	;; Make HEADERS: stand out
 	(goto-char (point-min))
 	(while (re-search-forward "\\([A-Z][^a-z]+\\):" nil t) ;; t means no error
-	  (toggle-read-only 0)
+	  (setq buffer-read-only nil)
 	  (add-text-properties (match-beginning 1) (match-end 1) '(face bold)))
 
 	;; make File: a link
 	(goto-char (point-min))
 	(while (re-search-forward "File:\\s-*\\(.*\\)" nil t) ;; t means no error
-	  (toggle-read-only 0)
+	  (setq buffer-read-only nil)
 	  (replace-match (sage-development-version (match-string 1)) nil nil nil 1)
 	  (help-xref-button 1 'help-sage-function-def symbol)
-	  (toggle-read-only 1))
+	  (setq buffer-read-only t))
 	t))))
 
 (defun ipython-describe-symbol (symbol)
@@ -1254,9 +1263,10 @@ Interactively, prompt for SYMBOL."
     (with-output-to-temp-buffer (help-buffer)
       (with-current-buffer standard-output
 	;; Fixme: Is this actually useful?
-	(help-setup-xref (list 'ipython-describe-symbol symbol) (interactive-p))
+	(help-setup-xref (list 'ipython-describe-symbol symbol)
+			 (called-interactively-p 'interactive))
 	(set (make-local-variable 'comint-redirect-subvert-readonly) t)
-	(print-help-return-message)
+	(help-print-return-message)
 	;; Finally, display help contents
 	(princ help-contents)))
     ;; Markup help buffer
@@ -1296,7 +1306,10 @@ definition can't be found in the buffer, returns (BUFFER)."
 	   (filename (sage-development-version raw-filename))
 	   (line-num (string-to-number (match-string 2 raw-contents))))
       (with-current-buffer (find-file-noselect filename)
-	(goto-line line-num) ; XXX error checking?
+	(save-restriction
+	  (widen)
+	  (goto-char (point-min))
+	  (forward-line (1- line-num))) ; XXX error checking?
 	(cons (current-buffer) (point))))))
 
 (defun sage-find-symbol-do-it (symbol switch-fn)
@@ -1478,7 +1491,6 @@ Interactively, try to find current method at point."
 	 (command (format "sage.misc.sagetest.sagetest(%s)" module))
 	 (compilation-error-regexp-alist '(sage-test sage-build)))
     (with-temp-buffer
-      (compile (eshell-flatten-and-stringify args))
       (python-send-receive-to-buffer command (current-buffer)))))
 
 (defvar sage-test-file 'sage-test-file-to-buffer)
