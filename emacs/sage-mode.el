@@ -63,6 +63,32 @@
 (require 'compile)
 (require 'help-mode)
 
+;;;_* Compatibility between fgallina and old python.el
+
+(if (fboundp 'python-beginning-of-string)
+    (defun sage-beginning-of-string ()
+      "Go to beginning of string around point.
+Do nothing if not in string."
+      (python-beginning-of-string))
+  (defun sage-beginning-of-string ()
+    "Go to beginning of string around point.
+Do nothing if not in string."
+    (let ((bos (python-info-ppss-context 'string (syntax-ppss))))
+      (when bos
+	(goto-char bos)))))
+
+(if (fboundp 'python-in-string/comment)
+    (defun sage-in-string/comment ()
+      "Return non-nil if point is in a Python literal (a comment or string)."
+      (python-in-string/comment))
+  (defun sage-in-string/comment ()
+    "Return non-nil if point is in a Python literal (a comment or string)."
+    (python-info-ppss-context 'string (syntax-ppss))))
+
+(unless (boundp 'python-prev-dir/file)
+  (defvar python-prev-dir/file nil))
+
+
 ;;;_ + SAGE mode key bindings
 
 (defvar sage-mode-map
@@ -1456,6 +1482,7 @@ Interactively, try to find current method at point."
       (python-send-receive-to-buffer command (current-buffer)))))
 
 (defvar sage-test-file 'sage-test-file-to-buffer)
+
 
 ;;;_* Read Mercurial's .hg bundle files naturally
 
