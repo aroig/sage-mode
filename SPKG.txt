@@ -3,6 +3,7 @@
 == Description ==
 
 sage-mode provides Emacs Lisp that helps you use Sage in GNU Emacs.
+Inspiration was provided by ipython.el originally.
 
 == License ==
 
