@@ -34,6 +34,9 @@
 
 (load "sage-load" t)
 
+(defconst sage-mode-version "0.8"
+  "Version of `sage-mode'.")
+
 (defcustom inferior-sage-prompt (rx line-start (1+ (and (or "sage:" ">>>" "....." "..." "(Pdb)" "ipdb>" "(gdb)") " ")))
   "Regular expression matching the SAGE prompt."
   :group 'sage
