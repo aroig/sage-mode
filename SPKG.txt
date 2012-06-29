@@ -27,27 +27,26 @@ Boston, MA 02110-1301, USA.
 
 == SPKG Maintainers ==
 
- * Nick Alexander
+ * Ivan Andrus
 
 == Upstream Contact ==
 
- * Author: Nick Alexander <ncalexander [at] gmail.com>
- * Bitbucket mercurial repository: [[http://bitbucket.org/ncalexan/sage-mode]]
+ * Maintainer: Ivan Andrus <darthandrus [at] gmail.com>
+ * Bitbucket mercurial repository: [[http://bitbucket.org/gvol/sage-mode]]
 
 == Dependencies ==
 
  * sage
- * GNU Emacs (with a current python.el)
+ * GNU Emacs (with python.el, not python-mode.el) Currently the newest
+   python.el (which is a rewrite by fgallina) is not fully supported.
+
 
 == Special Update/Build Instructions ==
 
-[[attachment:sage-mode-0.7.spkg]]
+After installation of the spkg, you must add something like the
+following to your .emacs:
 
-Use {{{sage -f sage-mode-0.7.spkg}}}.  The following installation instructions are suggested:
-
-A basic install might include the following Emacs Lisp in your .emacs:
-
-{{{
+;; Start .emacs
 (add-to-list 'load-path (expand-file-name "$SAGE_DATA/emacs"))
 (require 'sage "sage")
 (setq sage-command "$SAGE_ROOT/sage")
@@ -55,13 +54,13 @@ A basic install might include the following Emacs Lisp in your .emacs:
 ;; If you want sage-view to typeset all your output and have plot()
 ;; commands inline, uncomment the following line and configure sage-view:
 ;; (require 'sage-view "sage-view")
-;; (add-hook 'sage-startup-hook 'sage-view)
+;; (add-hook 'sage-startup-after-prompt-hook 'sage-view)
 ;; You can use commands like
-;; (add-hook 'sage-startup-hook 'sage-view
-;; 'sage-view-disable-inline-output 'sage-view-disable-inline-plots)
-;; to have some combination of features.  In future, the customize interface
-;; will make this simpler... hint, hint!
-}}}
+;; (add-hook 'sage-startup-after-prompt-hook 'sage-view-disable-inline-output)
+;; (add-hook 'sage-startup-after-prompt-hook 'sage-view-disable-inline-plots)
+;; to enable some combination of features.
+;; End .emacs
+
 
 == Changelog ==
 
@@ -70,7 +69,7 @@ A basic install might include the following Emacs Lisp in your .emacs:
 triple-quoted strings.
 
 * sage-mode is now hosted on bitbucket for easy viewing and cloning:
-browse to [[http://bitbucket.org/ncalexan/sage-mode]].
+browse to [[http://bitbucket.org/gvol/sage-mode]].
 
 === sage-mode-0.6 (Nick Alexander, 2009-05-11) ===
 * `sage-run' no longer waits for a sage: prompt by default.  This can cause
@@ -158,36 +157,3 @@ First alpha version, for Mike Hansen to use and test.
 
 === sage-mode-0.1 (Nick Alexander) ===
 First internal version.
-
-== Old versions ==
-
-[[attachment:sage-mode-0.6.spkg]]
-
-[[attachment:sage-mode-0.5.4.spkg]]
-
-[[attachment:sage-mode-0.5.2.spkg]]
-
-[[attachment:sage-mode-0.5.1.spkg]]
-
-[[attachment:sage-mode-0.5.spkg]]
-
-[[attachment:sage-mode-0.4.spkg]]
-
-[[attachment:sage-mode-0.3.1.spkg]]
-
-[[attachment:sage-mode-0.3.spkg]]
-
-[[attachment:sage-mode-0.2.spkg]]
-
-== Original version ==
-
-This version was from Sage Days 4.
-
-[[attachment:sage-mode.el]]
-[[attachment:pyrex-mode.el]]
-
-The following files need to go into sage/misc.
-
-[[attachment:sage_emacs.py]]
-[[attachment:xreload.py]]
-[[attachment:sagetest.py]]
