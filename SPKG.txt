@@ -43,11 +43,13 @@ Boston, MA 02110-1301, USA.
 
 == Special Update/Build Instructions ==
 
-After installation of the spkg, you must add something like the
-following to your .emacs:
-
 ;; Start .emacs
-(add-to-list 'load-path (expand-file-name "$SAGE_DATA/emacs"))
+
+
+;; After installation of the spkg, you must add something like the
+;; following to your .emacs:
+
+(add-to-list 'load-path "$SAGE_DATA/emacs")
 (require 'sage "sage")
 (setq sage-command "$SAGE_ROOT/sage")
 
@@ -59,6 +61,9 @@ following to your .emacs:
 ;; (add-hook 'sage-startup-after-prompt-hook 'sage-view-disable-inline-output)
 ;; (add-hook 'sage-startup-after-prompt-hook 'sage-view-disable-inline-plots)
 ;; to enable some combination of features.
+
+;; Also consider running (customize-group 'sage) to see more options.
+
 ;; End .emacs
 
 
