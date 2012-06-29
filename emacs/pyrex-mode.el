@@ -22,7 +22,10 @@
        (rx (* space) (or "class" "def" "cdef" "cpdef" "elif" "else" "except" "finally"
 			 "for" "if" "try" "while" "with")
 	   symbol-end))
-
+  (set (make-local-variable 'beginning-of-defun-function)
+       #'pyrex-beginning-of-defun)
+  (set (make-local-variable 'end-of-defun-function)
+       #'pyrex-end-of-defun)
   (font-lock-add-keywords
    nil
    `((,(concat "\\<\\(NULL"
@@ -73,7 +76,7 @@ BOS non-nil means point is known to be at beginning of statement."
 			     "EXAMPLES:" "TESTS:" "INPUT:" "OUTPUT:")
 			 symbol-end)))))
 
-(defadvice python-open-block-statement-p 
+(defadvice python-open-block-statement-p
   (around python-open-block-statement-p-advice first (&rest rest) activate)
   ;; this strange incantation calls the original python-open-block-statement
   ;; unless we're in a derived mode.  The (setq ad-return-value ...) is how
@@ -111,17 +114,9 @@ reached start of buffer."
                      ;;(and def-line (= in ci))
 		     (= in ci)
 		     (< in ci)))
-	       (not (python-in-string/comment)))
+	       (not (sage-in-string/comment)))
 	  (setq found t)))))
 
-(defadvice python-beginning-of-defun 
-  (around python-beginning-of-defun-advice first (&rest rest) activate)
-  ;; this strange incantation calls the original python function unless we're
-  ;; in a derived mode.  The (setq ad-return-value ...) is how one modifies
-  ;; the return value of advised functions.
-  (if (not (pyrex-mode-p))
-      ad-do-it
-    (setq ad-return-value (apply 'pyrex-beginning-of-defun rest))))
 
 (defun pyrex-end-of-defun ()
   "`end-of-defun-function' for Pyrex.
@@ -139,18 +134,18 @@ Finds end of innermost nested class or method definition."
     (if (zerop (current-indentation))
 	(unless (python-open-block-statement-p)
 	  (while (and (re-search-forward pattern nil 'move)
-		      (python-in-string/comment))) ; just loop
+		      (sage-in-string/comment))) ; just loop
 	  (unless (eobp)
 	    (beginning-of-line)))
       ;; Don't move before top-level statement that would end defun.
       (end-of-line)
-      (python-beginning-of-defun))
+      (beginning-of-defun))
     ;; If we got to the start of buffer, look forward for
     ;; definition statement.
     (if (and (bobp) (not (looking-at (rx (or "def" "cdef" "cpdef" "class")))))
 	(while (and (not (eobp))
 		    (re-search-forward pattern nil 'move)
-		    (python-in-string/comment)))) ; just loop
+		    (sage-in-string/comment)))) ; just loop
     ;; We're at a definition statement (or end-of-buffer).
     (unless (eobp)
       (python-end-of-block)
@@ -169,7 +164,7 @@ Finds end of innermost nested class or method definition."
     (if (< (point) orig)
 	(goto-char (point-max)))))
 
-(defadvice python-end-of-defun 
+(defadvice python-end-of-defun
   (around python-end-of-defun-advice first (&rest rest) activate)
   ;; this strange incantation calls the original python function unless we're
   ;; in a derived mode.  The (setq ad-return-value ...) is how one modifies
@@ -196,7 +191,7 @@ Finds end of innermost nested class or method definition."
 	    (push (match-string 1) accum)))
       (if accum (mapconcat 'identity accum ".")))))
 
-(defadvice python-current-defun 
+(defadvice python-current-defun
   (around python-current-defun-advice first (&rest rest) activate)
   ;; this strange incantation calls the original python function unless we're
   ;; in a derived mode.  The (setq ad-return-value ...) is how one modifies
