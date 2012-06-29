@@ -685,12 +685,13 @@ and restart a fresh inferior sage in an existing buffer.
 (defun sage-font-lock ()
   "Install Sage font-lock patterns."
   (interactive)
-  ;; (font-lock-add-keywords 'sage-mode python-font-lock-keywords 'set) ;; XXX
+  (font-lock-add-keywords 'sage-mode python-font-lock-keywords 'set) ;; XXX
 ;;   (font-lock-add-keywords 'sage-mode
 ;; 			  `(("\\(\\*\\*\\)test\\(\\*\\*\\)" . 'font-lock-comment-face)))
 )
 
 (add-hook 'sage-mode-hook 'sage-font-lock)
+(add-hook 'inferior-sage-mode-hook 'sage-font-lock)
 
 ;;;_* Treat SAGE code as Python source code
 
