@@ -479,7 +479,6 @@ Does not delete the prompt."
 	    (car (sage-all-inferior-sage-buffers))))))
   (let ((chosen-buffer (with-current-buffer buffer (current-buffer))))
     (setq sage-buffer chosen-buffer)
-    (setq sage-buffer chosen-buffer) ; update python-buffer too
     (when (sage-mode-p)
       (sage-update-mode-line chosen-buffer))))
 
@@ -591,7 +590,6 @@ buffer for a list of commands.)"
 			  (call-interactively 'sage-create-new-sage)
 			(sage-create-new-sage cmd)))
     (set-default 'sage-buffer sage-buffer) ; update defaults
-    (set-default 'python-buffer python-buffer)
 
     (with-current-buffer sage-buffer
       (unless noshow (pop-to-buffer sage-buffer)) ; show progress
