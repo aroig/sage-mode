@@ -8,6 +8,7 @@
 
 (require 'python)
 (require 'sage)
+(require 'sage-compat)
 
 ;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.pyx\\'" . pyrex-mode))

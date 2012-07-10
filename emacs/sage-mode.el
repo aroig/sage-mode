@@ -1523,3 +1523,5 @@ Interactively, try to find current method at point."
   (add-hook 'sage-mode-hook 'imenu-add-menubar-index))
 
 (provide 'sage-mode)
+
+;;; sage-mode.el ends here
