@@ -175,7 +175,20 @@ Do nothing if not in string."
   (add-to-list 'compilation-error-regexp-alist 'sage-build-compilation)
 
   (pcomplete-sage-setup)
+
+  ;; The new python.el does things a little differently wrt prompts.
+  ;; In particular it has debugger and normal operation separated.
+  ;; If we don't set them correctly things like completion don't work.
+  (setq python-shell-prompt-regexp ">>>\\|sage:")
+  (setq python-shell-prompt-pdb-regexp "[(<]*[Ii]?[PpGg]db[>)]+ ")
+
+  ;; Respect python-shell-enable-font-lock
+  (when (or (not (boundp 'python-shell-enable-font-lock))
+	     python-shell-enable-font-lock)
+    (sage-font-lock))
+
   (compilation-shell-minor-mode 1))
+
 
 (defun inferior-sage-wait-for-prompt ()
   "Wait until the SAGE process is ready for input."
@@ -678,7 +691,8 @@ and restart a fresh inferior sage in an existing buffer.
 
 \\{sage-mode-map}"
   (setq comment-column 60)
-  (set (make-local-variable 'font-lock-multiline) t))
+  (set (make-local-variable 'font-lock-multiline) t)
+  (sage-font-lock))
 
 (defun sage-font-lock ()
   "Install Sage font-lock patterns."
@@ -686,10 +700,7 @@ and restart a fresh inferior sage in an existing buffer.
   (font-lock-add-keywords 'sage-mode python-font-lock-keywords 'set) ;; XXX
 ;;   (font-lock-add-keywords 'sage-mode
 ;; 			  `(("\\(\\*\\*\\)test\\(\\*\\*\\)" . 'font-lock-comment-face)))
-)
-
-(add-hook 'sage-mode-hook 'sage-font-lock)
-(add-hook 'inferior-sage-mode-hook 'sage-font-lock)
+  )
 
 ;;;_* Treat SAGE code as Python source code
 
