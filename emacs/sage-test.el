@@ -198,7 +198,8 @@ Helps interactive doctesting of class/module comments."
       (narrow-to-defun)
     (save-excursion
       (let ((beg (nth 8 (syntax-ppss)))) ;;  8. character address of start of comment or string; nil if not in one.
-	(search-forward "\"\"\"") ;; just go to end of triple quoted string for now, even though it's not prefect
+	(goto-char beg)
+	(forward-sexp 1)
 	(narrow-to-region beg (point))))))
 
 (defun sage-send-doctest-line-and-forward (&optional noshow)
