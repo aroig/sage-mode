@@ -190,6 +190,46 @@ Expects that point is on the same line as a sage: prompt."
 	  (sage-send-command "\n" nil))
 	(sage-send-command "\n" t)))))
 
+(defun sage-fix-doctest-at-point ()
+  "Send doctest at point to Sage and replace output with the result.
+This is a localized form of `sage --fixdoctects`.
+Point must be on the same line as a sage: prompt.
+
+This calls Sage synchronously, so long doctests will freeze Emacs
+until they complete."
+  (interactive)
+  (let* ((doctest (sage-test-doctest-at-point))
+	 (indentation (current-indentation))
+	 (result (with-temp-buffer
+		   ;;
+		   (message "Computing %s ..." doctest)
+		   (python-send-receive-to-buffer doctest (current-buffer))
+		   (buffer-substring-no-properties (point-min) (point-max)))))
+    ;; Let you know we are done.
+    (if (string-equal result "")
+	(message "No result")
+      ;; Chop off the trailing \n
+      (message "result: %s" (substring result 0 (1- (length result)))))
+    (save-restriction
+      (sage-test-narrow-to-defun-or-string)
+      ;; Move past the doctest
+      (forward-line 1)
+      (while (looking-at (rx (0+ whitespace) "..."))
+	;; accumulate additional lines
+	(forward-line 1))
+      ;; Select the result
+      (let ((start (point)))
+	(while (and (not (looking-at
+		     (rx (or (and line-start (0+ whitespace) line-end)
+			     (and line-start (0+ whitespace) "sage: ")))))
+		    (zerop (forward-line 1))))
+	;; In case we tried to move past the end of the string...
+	(beginning-of-line)
+	;; Replace and indent
+	(delete-region start (point))
+	(insert result)
+	(indent-rigidly start (point) indentation)))))
+
 (defun sage-test-narrow-to-defun-or-string ()
   "Narrow to the current docstring if possible, otherwise to the surrounding defun.
 Helps interactive doctesting of class/module comments."
