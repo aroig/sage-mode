@@ -59,37 +59,12 @@
 (eval-when-compile (require 'cl))
 (eval-when-compile (require 'hippie-exp))
 (eval-when-compile (require 'eshell))
+(require 'sage-compat)
 (require 'python)
 (require 'comint)
 (require 'ansi-color)
 (require 'compile)
 (require 'help-mode)
-
-;;;_* Compatibility between fgallina and old python.el
-
-(if (fboundp 'python-beginning-of-string)
-    (defun sage-beginning-of-string ()
-      "Go to beginning of string around point.
-Do nothing if not in string."
-      (python-beginning-of-string))
-  (defun sage-beginning-of-string ()
-    "Go to beginning of string around point.
-Do nothing if not in string."
-    (let ((bos (python-info-ppss-context 'string (syntax-ppss))))
-      (when bos
-	(goto-char bos)))))
-
-(if (fboundp 'python-in-string/comment)
-    (defun sage-in-string/comment ()
-      "Return non-nil if point is in a Python literal (a comment or string)."
-      (python-in-string/comment))
-  (defun sage-in-string/comment ()
-    "Return non-nil if point is in a Python literal (a comment or string)."
-    (python-info-ppss-context 'string (syntax-ppss))))
-
-(unless (boundp 'python-prev-dir/file)
-  (defvar python-prev-dir/file nil))
-
 
 ;;;_ + SAGE mode key bindings
 
@@ -599,7 +574,7 @@ buffer for a list of commands.)"
   ;; invoked.  Would support multiple processes better.
   (if (not (or new (sage-new-sage-p)))
       (unless noshow (pop-to-buffer sage-buffer))
-    (setq sage-buffer (if (called-interactively-p 'all)
+    (setq sage-buffer (if (sage-called-interactively-p 'all)
 			  (call-interactively 'sage-create-new-sage)
 			(sage-create-new-sage cmd)))
     (set-default 'sage-buffer sage-buffer) ; update defaults
@@ -1117,7 +1092,7 @@ time, it does not handle multi-line input strings at all."
 	(accept-process-output nil 1)))
     ;; Return the output
     (let ((output (buffer-substring-no-properties (point-min) (point-max))))
-      (when (called-interactively-p 'interactive)
+      (when (sage-called-interactively-p 'interactive)
 	(message output))
       output)))
 
@@ -1274,7 +1249,7 @@ Interactively, prompt for SYMBOL."
       (with-current-buffer standard-output
 	;; Fixme: Is this actually useful?
 	(help-setup-xref (list 'ipython-describe-symbol symbol)
-			 (called-interactively-p 'interactive))
+			 (sage-called-interactively-p 'interactive))
 	(set (make-local-variable 'comint-redirect-subvert-readonly) t)
 	(help-print-return-message)
 	;; Finally, display help contents
