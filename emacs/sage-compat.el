@@ -52,7 +52,7 @@ Do nothing if not in string."
   (defalias 'python-previous-statement #'python-nav-backward-sentence))
 
 (unless (fboundp 'python-beginning-of-block)
-  (error "Please update to the latest version of fgallina's python.el."))
+  (defalias 'python-previous-statement #'python-nav-beginning-of-block))
 
 (unless (fboundp 'python-end-of-block)
   (defalias 'python-end-of-block 'python-nav-end-of-block))
