@@ -9,6 +9,7 @@
 ;;; Commentary:
 ;;
 
+(eval-when-compile (require 'cl))
 (require 'sage)
 (require 'sage-mode)
 
@@ -238,9 +239,10 @@ Helps interactive doctesting of class/module comments."
       (narrow-to-defun)
     (save-excursion
       (let ((beg (nth 8 (syntax-ppss)))) ;;  8. character address of start of comment or string; nil if not in one.
-	(goto-char beg)
-	(forward-sexp 1)
-	(narrow-to-region beg (point))))))
+	(when beg
+	  (goto-char beg)
+	  (forward-sexp 1)
+	  (narrow-to-region beg (point)))))))
 
 (defun sage-send-doctest-line-and-forward (&optional noshow)
   "If looking at a 'sage:' prompt, send this line and move to the next prompt
@@ -254,15 +256,20 @@ If NOSHOW is nil, display the Sage process buffer."
     (beginning-of-line)
     (unless (looking-at sage-test-prompt)
       (error "Not at a sage: prompt"))
+
     ;; send current line
     (re-search-forward sage-test-prompt)
     (sage-send-doctest-at-point)
     ;; (sage-send-command (sage-test-doctest-at-point) t)
-
     (unless noshow (display-buffer sage-buffer)))
   (save-restriction
     (sage-test-narrow-to-defun-or-string)
     (end-of-line)
+    ;; What must be a bug in Emacs 23.1.1 causes a problem unless we
+    ;; force redisplay.  I'm not sure what other versions it affects,
+    ;; but it's fixed by 24.1.
+    (when (<= emacs-major-version 23)
+      (sit-for 0))
     (unless (re-search-forward sage-test-prompt (point-max) t)
       (forward-line 1))
     (end-of-line)))
@@ -313,8 +320,7 @@ If NOGO is nil, pop to the Sage process buffer."
 	files))))
 
 (defun sage-retest (buffer)
-  "Retest only failing files scraped from an existing *sage-test* buffer.
-"
+  "Retest only failing files scraped from an existing *sage-test* buffer."
   (interactive "bRetest failing files from buffer: ")
   (let* ((files (sage-retest-failing-files-from-buffer buffer))
 	 (files-str (mapconcat #'identity files " ")))
