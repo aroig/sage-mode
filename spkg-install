@@ -29,7 +29,7 @@ rm -f $SAGE_DATA/emacs/*.elc
 
 # Byte compile -- this can fail since we don't require emacs for Sage
 EMACS=${EMACS-emacs}
-which $EMACS 2> /dev/null > /dev/null
+$EMACS -batch 2> /dev/null > /dev/null
 if [ $? -ne 0 ]; then
     echo
     echo WARNING: Could not find emacs at "'$EMACS'"
