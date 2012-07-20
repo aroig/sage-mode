@@ -20,14 +20,18 @@
 	`(with-no-warnings (called-interactively-p ,kind)) ;; defined with no argument in <=23.1
       `(interactive-p))))
 
+(unless (fboundp 'help-print-return-message)
+  (defalias 'help-print-return-message 'print-help-return-message))
+
 (if (fboundp 'python-beginning-of-string)
     (defalias 'sage-beginning-of-string 'python-beginning-of-string)
-  (defun sage-beginning-of-string ()
-    "Go to beginning of string around point.
+  (with-no-warnings
+    (defun sage-beginning-of-string ()
+      "Go to beginning of string around point.
 Do nothing if not in string."
-    (let ((bos (python-info-ppss-context 'string)))
-      (when bos
-	(goto-char bos)))))
+      (let ((bos (python-info-ppss-context 'string)))
+	(when bos
+	  (goto-char bos))))))
 
 (if (fboundp 'python-in-string/comment)
     (defalias 'sage-in-string/comment 'python-in-string/comment)

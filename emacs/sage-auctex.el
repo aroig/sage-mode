@@ -11,6 +11,10 @@
 
 ;;; Code:
 
+(eval-when-compile (and (require 'tex-site nil t)
+			(require 'tex)
+			(require 'tex-buf)))
+
 ;;;###autoload
 (defun sage-run-sagetex (name command file)
   "Function to be used in `TeX-command-list' to run sage on sagetex files.
@@ -19,8 +23,9 @@ need to retypeset after running sage.
 For details of NAME, COMMAND and FILE see the documetation for `TeX-command-list'."
   (TeX-run-compile name command file)
   ;; TODO: This only works if there is a process buffer, i.e. not a compile buffer.
-  (TeX-process-set-variable file 'TeX-command-next
-                            TeX-command-default))
+  (with-no-warnings
+    (TeX-process-set-variable file 'TeX-command-next
+			      TeX-command-default)))
 
 (defadvice TeX-LaTeX-sentinel (after LaTeX-recognize-sage (process name))
   "Recognize when Sage needs to be run."

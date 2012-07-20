@@ -5,6 +5,9 @@
 ;; Author: Nicholas Alexander <ncalexan@pv109055.reshsg.uci.edu>
 ;; Keywords: sage build
 
+(require 'compile)
+(require 'sage-mode)
+
 ;; History of sage-build commands.
 ;;;###autoload
 (defvar sage-build-history nil)

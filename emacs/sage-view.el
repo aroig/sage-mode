@@ -57,6 +57,7 @@
 ;;; Code:
 (require 'sage)
 (require 'sage-mode)
+(require 'mouse) ;; for popup-menu
 
 (defcustom sage-view-latex-head
   "\\documentclass{article}

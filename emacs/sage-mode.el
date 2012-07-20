@@ -59,12 +59,17 @@
 (eval-when-compile (require 'cl))
 (eval-when-compile (require 'hippie-exp))
 (eval-when-compile (require 'eshell))
+(eval-when-compile (require 'esh-cmd))
+(eval-when-compile (require 'esh-io))
+(eval-when-compile (require 'pcomplete))
 (require 'sage-compat)
 (require 'python)
 (require 'comint)
 (require 'ansi-color)
 (require 'compile)
 (require 'help-mode)
+(require 'find-func)
+(require 'apropos)
 
 ;;;_ + SAGE mode key bindings
 
@@ -154,13 +159,14 @@
   ;; The new python.el does things a little differently wrt prompts.
   ;; In particular it has debugger and normal operation separated.
   ;; If we don't set them correctly things like completion don't work.
-  (setq python-shell-prompt-regexp ">>>\\|sage:")
-  (setq python-shell-prompt-pdb-regexp "[(<]*[Ii]?[PpGg]db[>)]+ ")
+  (with-no-warnings ;; They give warnings with old python.el
+    (setq python-shell-prompt-regexp ">>>\\|sage:")
+    (setq python-shell-prompt-pdb-regexp "[(<]*[Ii]?[PpGg]db[>)]+ ")
 
-  ;; Respect python-shell-enable-font-lock
-  (when (or (not (boundp 'python-shell-enable-font-lock))
-	     python-shell-enable-font-lock)
-    (sage-font-lock))
+    ;; Respect python-shell-enable-font-lock
+    (when (or (not (boundp 'python-shell-enable-font-lock))
+	      python-shell-enable-font-lock)
+      (sage-font-lock)))
 
   (compilation-shell-minor-mode 1))
 
@@ -926,16 +932,16 @@ Returns a pair (PACKAGE . MODULE).  The first is the top level
 package directory; the second is the dotted Python module name.
 
 Adapted from a patch posted to the python-mode trac."
-  (let ((rec #'(lambda (d f)
-		 (let* ((dir (file-name-directory d))
-			(initpy (concat dir "__init__.py")))
-		   (if (file-exists-p initpy)
-		       (let ((d2 (directory-file-name d)))
-			 (funcall rec (file-name-directory d2)
-				  (concat (file-name-nondirectory d2) "." f)))
-		     (list d f))))))
-    (funcall rec (file-name-directory file)
-	     (file-name-sans-extension (file-name-nondirectory file)))))
+  (flet ((rec (d f)
+	      (let* ((dir (file-name-directory d))
+		     (initpy (concat dir "__init__.py")))
+		(if (file-exists-p initpy)
+		    (let ((d2 (directory-file-name d)))
+		      (rec (file-name-directory d2)
+			   (concat (file-name-nondirectory d2) "." f)))
+		  (list d f)))))
+    (rec (file-name-directory file)
+	 (file-name-sans-extension (file-name-nondirectory file)))))
 
 ;;; Replace original `python-load-file' to use xreload and packages.
 (defadvice python-load-file
@@ -1404,14 +1410,14 @@ otherwise."
   (set (make-local-variable 'pcomplete-use-paring)
       nil)
 
-  (set (make-variable-buffer-local 'pcomplete-default-completion-function)
+  (set (make-local-variable 'pcomplete-default-completion-function)
        'pcomplete-sage-default-completion)
-  (set (make-variable-buffer-local 'pcomplete-command-completion-function)
+  (set (make-local-variable 'pcomplete-command-completion-function)
        'pcomplete-sage-default-completion)
-  (set (make-variable-buffer-local 'pcomplete-parse-arguments-function)
+  (set (make-local-variable 'pcomplete-parse-arguments-function)
        'pcomplete-parse-sage-arguments)
 
-  (set (make-variable-buffer-local 'pcomplete-termination-string)
+  (set (make-local-variable 'pcomplete-termination-string)
        "")
   )
 

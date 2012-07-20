@@ -1,3 +1,5 @@
+(eval-when-compile (require 'flymake))
+
 (when (require 'flymake nil t)
   (defun flymake-pylint-init ()
     (let* ((temp-file (flymake-init-create-temp-buffer-copy
