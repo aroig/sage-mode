@@ -23,7 +23,27 @@ cd "$CUR"
 rm -rf $SAGE_DATA/emacs
 cp -r emacs $SAGE_DATA/emacs
 
-# Trick the shell into expanding $SAGE_DATA and $SAGE_ROOT
-sh -c "cat <<EOF
+# Remove old elc files if any.
+# Then, even if byte compiling fails, they won't taint the setup.
+rm -f $SAGE_DATA/emacs/*.elc
+
+# Byte compile -- this can fail since we don't require emacs for Sage
+EMACS=${EMACS-emacs}
+which $EMACS 2> /dev/null > /dev/null
+if [ $? -ne 0 ]; then
+    echo
+    echo WARNING: Could not find emacs at "'$EMACS'"
+    echo "Set the EMACS environment variable or ignore this if you don't have emacs installed"
+
+else
+
+    echo Byte compiling sage-mode with "'$EMACS'"
+    echo Set the EMACS environment variable to compile with a different emacs.
+    $EMACS -batch -L $SAGE_DATA/emacs/ -f batch-byte-compile $SAGE_DATA/emacs/*.el
+
+    # Trick the shell into expanding $SAGE_DATA and $SAGE_ROOT
+    sh -c "cat <<EOF
 $(perl -ne 'print if (/Start .emacs/../End .emacs/)' SPKG.txt)
 EOF"
+
+fi
