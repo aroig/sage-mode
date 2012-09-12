@@ -1,4 +1,4 @@
-;;; sage-auctex.el --- AUCTeX support for Sage code
+;;; sage-latex.el --- LaTeX support for Sage code
 
 ;; Copyright (C) 2012  Ivan Andrus
 
@@ -7,13 +7,16 @@
 
 ;;; Commentary:
 
-;; This file adds functionality to AUCTeX supporting usage of SageTeX.
+;; This file adds functionality to AUCTeX and org-mode, to support
+;; usage of SageTeX.
 
 ;;; Code:
 
-(eval-when-compile (and (require 'tex-site nil t)
-			(require 'tex)
-			(require 'tex-buf)))
+(eval-when-compile
+  (and (require 'tex-site nil t)
+       (require 'tex)
+       (require 'tex-buf))
+  (require 'org-latex nil t))
 
 ;;;###autoload
 (defun sage-run-sagetex (name command file)
@@ -71,8 +74,27 @@ Adds entries `TeX-expand-list' and `TeX-command-list' and advises
   (ad-activate 'TeX-LaTeX-sentinel))
 
 ;;;###autoload
+(defun sage-org-latex-setup ()
+  "Sets up `org-mode' variables to support using SageTeX.
+Currently only `org-latex-to-pdf-process' is affected."
+
+  (let ((is-default (equal org-latex-to-pdf-process
+			   (default-value 'org-latex-to-pdf-process))))
+    (unless (loop for command in org-latex-to-pdf-process
+		  when (string-match "sagetex.sage" command) collect command)
+      (setcdr org-latex-to-pdf-process
+	      (cons (concat "if [ -f %b.sagetex.sage ]; then "
+			    sage-command " %b.sagetex.sage; fi")
+		    (cdr org-latex-to-pdf-process)))
+      (and (not is-default)
+	   (message
+	    "It appears you have made changes to `org-latex-to-pdf-process'. You may also wish to add support for SageTeX.")))))
+
+;;;###autoload
 (eval-after-load 'tex '(sage-auctex-setup))
+;;;###autoload
+(eval-after-load 'org-latex '(sage-org-latex-setup))
 
 (provide 'sage-auctex)
 
-;;; sage-auctex.el ends here
+;;; sage-latex.el ends here
