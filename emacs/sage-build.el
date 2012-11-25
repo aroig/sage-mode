@@ -111,9 +111,9 @@ Set up `compilation-exit-message-function' and run `sage-build-setup-hook'."
        (lambda (status code msg)
 	 (if (eq status 'exit)
 	     (cond ((zerop code)
-		    '("finished (build failed)\n" . "build failed"))
-		   ((> code 0)
 		    '("finished (build succeeded)\n" . "build succeeded"))
+		   ((> code 0)
+		    '("finished (build failed)\n" . "build failed"))
 		   (t
 		    (cons msg code)))
 	   (cons msg code))))
