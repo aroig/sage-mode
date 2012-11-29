@@ -371,24 +371,30 @@ Make sure that there is a valid image associated with OV with
 	(copy-file file name))))
 
 (defun sage-view-regenerate (ov)
-  ""
+  "Return zoom to normal and regenerate the overlay."
   (overlay-put ov 'scale sage-view-scale)
   (sage-view-process-overlay ov))
 
-(defun sage-view-zoom-in (ov)
-  ""
+(defun sage-view-zoom-in (ov &optional multiplier)
+  "Internal function to zoom in on an overlay."
+  (unless (numberp multiplier)
+    (setq multiplier 1))
   (let ((scale (or (overlay-get ov 'scale) sage-view-scale)))
-    (overlay-put ov 'scale (+ scale sage-view-scale-factor))
+    (overlay-put ov 'scale (+ scale (* multiplier sage-view-scale-factor)))
     (message "Overlay's scale set to %s" scale)
-    ;(overlay-put ov 'display (overlay-get ov 'math))
     (sage-view-process-overlay ov)))
 
-(defun sage-view-zoom-out (ov)
-  ""
-  (let ((scale (or (overlay-get ov 'scale) sage-view-scale)))
-    (overlay-put ov 'scale (- scale sage-view-scale-factor))
+(defun sage-view-zoom-out (ov &optional multiplier)
+  "Internal function to zoom out on an overlay."
+  (unless (numberp multiplier)
+    (setq multiplier 1))
+  (let* ((scale (or (overlay-get ov 'scale) sage-view-scale))
+	 (new-scale (- scale (* multiplier sage-view-scale-factor))))
+    ;; Ensure it's not too small (or negative)
+    (when (< new-scale sage-view-scale-factor)
+      (setq new-scale sage-view-scale-factor))
+    (overlay-put ov 'scale new-scale)
     (message "Overlay's scale set to %s" scale)
-    ;(overlay-put ov 'display (overlay-get ov 'math))
     (sage-view-process-overlay ov)))
 
 (defun sage-view-context-menu (ov ev)
@@ -399,9 +405,11 @@ Make sure that there is a valid image associated with OV with
      ["Copy Text" (lambda () (interactive) (sage-view-copy-text ,ov))]
      ["Save As..." (lambda () (interactive) (sage-view-save-image ,ov))
       `(sage-view-overlay-activep ,ov)]
-     ["Zoom in" (lambda () (interactive) (sage-view-zoom-in ,ov))
+     ["Zoom in" (lambda (multiplier) (interactive "p")
+		  (sage-view-zoom-in ,ov multiplier))
       `(sage-view-overlay-activep ,ov)]
-     ["Zoom out" (lambda () (interactive) (sage-view-zoom-out ,ov))
+     ["Zoom out" (lambda (multiplier) (interactive "p")
+		   (sage-view-zoom-out ,ov multiplier))
       `(sage-view-overlay-activep ,ov)])
    ev))
 
