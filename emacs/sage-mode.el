@@ -160,7 +160,7 @@
   ;; In particular it has debugger and normal operation separated.
   ;; If we don't set them correctly things like completion don't work.
   (with-no-warnings ;; They give warnings with old python.el
-    (setq python-shell-prompt-regexp ">>>\\|sage:")
+    (setq python-shell-prompt-regexp ">>> \\|\\(sage: \\)+")
     (setq python-shell-prompt-pdb-regexp "[(<]*[Ii]?[PpGg]db[>)]+ ")
 
     ;; Respect python-shell-enable-font-lock
@@ -587,9 +587,9 @@ buffer for a list of commands.)"
 
     (with-current-buffer sage-buffer
       (unless noshow (pop-to-buffer sage-buffer)) ; show progress
-      (run-hooks 'sage-startup-before-prompt-hook)
       (unless (inferior-sage-mode-p)
 	(inferior-sage-mode))
+      (run-hooks 'sage-startup-before-prompt-hook)
 
       ;; if there are commands to be executed after the prompt, wait for prompt...
       (when (and sage-startup-after-prompt-hook (inferior-sage-wait-for-prompt))
