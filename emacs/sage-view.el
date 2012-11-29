@@ -78,11 +78,11 @@
   :type 'string
   :group 'sage-view)
 
-(defvar sage-view-start-string "<html><span class=\"math\">"
+(defvar sage-view-start-string "<html><\\(?:script type=\"math/tex\"\\)>"
   "HTML tags that identify the begining of a math formula in Sage
   output.")
 
-(defvar sage-view-final-string "</span></html>"
+(defvar sage-view-final-string "</\\(?:span\\|script\\)></html>"
   "HTML tags that identify the end of a math formula in Sage
   output.")
 
@@ -196,20 +196,24 @@ output. And should be wrapped in a `save-excursion' and
 
 See also `sage-view-output-filter'."
   (goto-char (point-min))
-  (while (search-forward sage-view-start-string (point-max) t)
-    (let* ((beg (point))
-	   (end (- (search-forward sage-view-final-string (point-max) t)
-		   (length sage-view-final-string)))
-	   (text (buffer-substring-no-properties beg end))
-	   (ov (make-overlay (- beg (length sage-view-start-string))
-			     (+ end (length sage-view-final-string))
-			     nil nil nil))
-	   (map (make-sparse-keymap)))
+  (while (re-search-forward sage-view-start-string (point-max) t)
+    (let* ((header-beg (match-beginning 0))
+           (header-end (match-end 0))
+
+           (footer-beg (when (re-search-forward sage-view-final-string (point-max) t)
+                         (match-beginning 0)))
+           (footer-end (match-end 0))
+           (text (buffer-substring-no-properties header-end footer-beg))
+           (ov (make-overlay header-beg
+                             footer-end
+                             nil nil nil))
+           (map (make-sparse-keymap)))
       (overlay-put ov 'help-echo "mouse-3: Open contextual menu")
       (overlay-put ov 'math text)
+      (overlay-put ov 'display (format "Typesetting %s..." text))
       (define-key map [mouse-3]
-	`(lambda (event) (interactive "e")
-	   (sage-view-context-menu ,ov event)))
+        `(lambda (event) (interactive "e")
+           (sage-view-context-menu ,ov event)))
       (overlay-put ov 'keymap map)
       (sage-view-process-overlay ov))))
 
@@ -257,7 +261,7 @@ Function to be inserted in `comint-output-filter-functions'."
       (when sage-view-inline-plots-enabled
 	(sage-view-output-filter-process-inline-plots string))
       (when (and sage-view-inline-output-enabled
-		 (string-match (regexp-quote sage-view-final-string) string))
+		 (string-match sage-view-final-string string))
 	(sage-view-output-filter-process-inline-output string)))))
 
 ;;;###autoload
