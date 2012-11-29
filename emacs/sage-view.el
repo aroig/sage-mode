@@ -321,8 +321,13 @@ writable directory."
   (unless (and sage-view-dir-name
 	       (file-directory-p sage-view-dir-name)
 	       (file-writable-p sage-view-dir-name))
-    (setq sage-view-dir-name
-	  (make-temp-name (expand-file-name "tmp" "~/.sage/temp/")))
+    ;; I'm not sure SAGE_TESTDIR is the right thing, but it's
+    ;; .sage/tmp which seems like what I should use.
+    (let ((tmp-dir (shell-command-to-string (concat sage-command " -sh -c 'echo -n $SAGE_TESTDIR' 2>/dev/null"))))
+      (when (= 0 (length tmp-dir))
+	(setq tmp-dir "~/.sage/tmp"))
+      (setq sage-view-dir-name
+	    (make-temp-name (expand-file-name "emacs" tmp-dir))))
     (condition-case err
 	(make-directory sage-view-dir-name)
       (error (message "Creation of `%s' failed: %s"
