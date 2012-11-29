@@ -775,6 +775,14 @@ the region \"2\" does not print \"2\"."
       ;; `python-send-command''s call to `compilation-forget-errors'.
       (compilation-fake-loc orig-start f))))
 
+(defun sage-attach-this-file ()
+  "Attach this file to the current Sage process."
+  (interactive)
+  (sage-maybe-quit-debugger)
+  (if buffer-file-name
+      (sage-send-command (format "attach(r'''%s''')" buffer-file-name) nil)
+    (error "This buffer is not associated with a file.  Please save it first.")))
+
 ;;;_* Integrate SAGE mode with Emacs
 
 ;;;###autoload
