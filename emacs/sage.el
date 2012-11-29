@@ -53,16 +53,24 @@
 It uses sage in PATH if it can find it, otherwise on OS X it
 attempts to find and use Sage.app.  It falls back to ~/bin/sage."
   (car (split-string
-        (flet ((nill-if-empty (s) (and (> (length s) 2) s)))
-          (or (nill-if-empty (shell-command-to-string "which sage 2>/dev/null"))
-              (and (eq system-type 'darwin)
-                   (nill-if-empty
-                    (shell-command-to-string
-                     (concat "osascript -e 'tell app \"Finder\" to "
-                             "POSIX path of "
-                             "(application file id \"org.sagemath.Sage\" as alias) "
-                             "& \"Contents/Resources/sage/sage\"' 2>/dev/null "))))
-              (expand-file-name "~/bin/sage")))
+        (flet ((nil-if-empty (s) (and (> (length s) 2) s)))
+	  ;; in PATH
+          (or (nil-if-empty (shell-command-to-string "which sage 2>/dev/null"))
+	      ;; loaded from a sage installation
+	      (and load-file-name
+		   (string-match ".*/data/emacs/" load-file-name)
+		   (concat (match-string 0) "sage"))
+	      ;; Find a Sage.app on OS X
+	      (and (eq system-type 'darwin)
+		   (nil-if-empty
+		    (shell-command-to-string
+		     ;; "mdfind kMDItemCFBundleIdentifier == 'org.sagemath.Sage'"
+		     (concat "osascript -e 'tell app \"Finder\" to "
+			     "POSIX path of "
+			     "(application file id \"org.sagemath.Sage\" as alias) "
+			     "& \"Contents/Resources/sage/sage\"' 2>/dev/null "))))
+	      ;; Some semi-sensible default
+	      (expand-file-name "~/bin/sage")))
         "\n")))
 
 (defcustom sage-command (sage-guess-command)
