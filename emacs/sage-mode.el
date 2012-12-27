@@ -1129,7 +1129,7 @@ time, it does not handle multi-line input strings at all."
 (defvar ipython-completing-read-symbol-pred nil
   "Default predicate for filtering queried Python symbols.")
 
-(defvar ipython-completing-read-symbol-command "_ip.IP.magic_psearch('-a %s*')"
+(defvar ipython-completing-read-symbol-command "%%psearch -a %s*"
   "IPython command for generating completions.
 Each completion should appear separated by whitespace.")
 
