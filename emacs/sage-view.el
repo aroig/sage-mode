@@ -128,6 +128,27 @@ See also `sage-view-process-overlay'."
     (process-put proc 'overlay ov)
     (set-process-sentinel proc 'sage-view-pdf->png-sentinel)))
 
+(defvar sage-view-conversion-failed-map
+  (let ((map (make-sparse-keymap))
+	(l (lambda () (interactive)
+	     (dolist (ov (overlays-at (point)))
+	       (if (overlay-get ov 'file-sans-extension)
+		   (find-file (concat (overlay-get ov 'file-sans-extension) ".log")))))))
+    (define-key map "RET" l)
+    (define-key map [return] l)
+    (define-key map [mouse-1]
+      (lambda (event) (interactive "e")
+	(dolist (ov (overlays-at (posn-point (event-end event))))
+	  (if (overlay-get ov 'file-sans-extension)
+	      (find-file (concat (overlay-get ov 'file-sans-extension) ".log"))))))
+    (define-key map [mouse-3]
+      (lambda (event) (interactive "e")
+	(dolist (ov (overlays-at (posn-point (event-end event))))
+	  (if (overlay-get ov 'file-sans-extension)
+	      (sage-view-context-menu ov event)))))
+    map)
+  "Keymap for overlays in which the conversion has failed.")
+
 (defun sage-view-latex->pdf-sentinel (proc event)
   "If PROC (supposed to be a conversion process from LATEX to
 PDF) was successful, convert the PDF to PNG.
@@ -137,6 +158,7 @@ See also `sage-view-process-overlay'."
 	 (base (overlay-get ov 'file-sans-extension)))
     (if (string-match "finished" event)
 	(sage-view-pdf->png ov)
+      (overlay-put ov 'keymap sage-view-conversion-failed-map)
       (overlay-put ov 'display
 		   (concat "Conversion failed (see " base ".log" ")")))))
 
@@ -151,10 +173,11 @@ See also `sage-view-process-overlay'."
 	 (image (when (and (string-match "finished" event)
 			   png (file-readable-p png))
 		  (append (list 'image :type 'png :file png :margin sage-view-margin)))))
-    (if (not image)
-	(overlay-put ov 'display
-		     (concat "Conversion failed (see " base ".log" ")"))
-      (overlay-put ov 'display image))
+    (if image
+	(overlay-put ov 'display image)
+      (overlay-put ov 'keymap sage-view-conversion-failed-map)
+      (overlay-put ov 'display
+		   (concat "Conversion failed (see " base ".log" ")")))
     (sit-for 0)))
 
 (defun sage-view-compute-resolution (scale)
@@ -400,7 +423,7 @@ Make sure that there is a valid image associated with OV with
 (defun sage-view-context-menu (ov ev)
   "Pop up a menu for OV at position EV."
   (popup-menu
-   `("Sage Mode"
+   `("Sage View Mode"
      ["Regenerate" (lambda () (interactive) (sage-view-regenerate ,ov))]
      ["Copy Text" (lambda () (interactive) (sage-view-copy-text ,ov))]
      ["Save As..." (lambda () (interactive) (sage-view-save-image ,ov))
@@ -410,6 +433,10 @@ Make sure that there is a valid image associated with OV with
       `(sage-view-overlay-activep ,ov)]
      ["Zoom out" (lambda (multiplier) (interactive "p")
 		   (sage-view-zoom-out ,ov multiplier))
+      `(sage-view-overlay-activep ,ov)]
+     "--"
+     ["Customize Conversion Options" (lambda () (interactive)
+				       (customize-group 'sage-view t))
       `(sage-view-overlay-activep ,ov)])
    ev))
 
