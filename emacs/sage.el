@@ -37,6 +37,11 @@
 (defconst sage-mode-version "0.8"
   "Version of `sage-mode'.")
 
+(defgroup sage nil "Major mode for editing and running Sage"
+  :group 'languages
+  :prefix "sage-"
+  :link '(url-link :tag "Homepage" "https://bitbucket.org/gvol/sage-mode/"))
+
 (defcustom inferior-sage-prompt (rx line-start (1+ (and (or "sage:" ">>>" "....." "..." "(Pdb)" "ipdb>" "(gdb)") " ")))
   "Regular expression matching the SAGE prompt."
   :group 'sage
@@ -129,7 +134,7 @@ See `sage-startup-before-prompt-hook' and `run-hooks'."
 (defgroup sage-test nil "Run Sage doctests"
   :group 'sage
   :prefix "sage-test-"
-  :link '(url-link :tag "Homepage" "http://wiki.sagemath.org/sage-mode"))
+  :link '(url-link :tag "Homepage" "https://bitbucket.org/gvol/sage-mode/"))
 
 (defcustom sage-test-setup-hook nil
   "List of hook functions run by `sage-test-process-setup' (see `run-hooks')."
@@ -145,7 +150,7 @@ See `sage-startup-before-prompt-hook' and `run-hooks'."
 (defgroup sage-build nil "Build the Sage library"
   :group 'sage
   :prefix "sage-build-"
-  :link '(url-link :tag "Homepage" "http://wiki.sagemath.org/sage-mode"))
+  :link '(url-link :tag "Homepage" "https://bitbucket.org/gvol/sage-mode/"))
 
 (defcustom sage-build-setup-hook nil
   "List of hook functions run by `sage-build-process-setup' (see `run-hooks')."
@@ -161,7 +166,7 @@ Additional arguments are added when the command is used by `rerun-sage' et al."
 (defgroup sage-view nil "Typeset Sage output on the fly"
   :group 'sage
   :prefix "sage-view-"
-  :link '(url-link :tag "Homepage" "http://wiki.sagemath.org/sage-mode"))
+  :link '(url-link :tag "Homepage" "https://bitbucket.org/gvol/sage-mode/"))
 
 (defcustom sage-view-gs-command (if (eq system-type 'windows-nt)
 				    "GSWIN32C.EXE"
