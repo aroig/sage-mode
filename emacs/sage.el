@@ -179,12 +179,14 @@ and `sage-view-scale'."
   :type 'list
   :group 'sage-view)
 
-(defcustom sage-view-anti-aliasing-level 2
+(defcustom sage-view-anti-aliasing-level 4
   "*Level of anti-aliasing used when converting from PDF to PNG. "
-  :type 'integer
+  :type '(choice (const :tag "No anti-aliasing" 1)
+                 (const :tag "Some anti-aliasing" 2)
+                 (const :tag "More anti-aliasing (slower, but prettier)." 4))
   :group 'sage-view)
 
-(defcustom sage-view-scale 1.2
+(defcustom sage-view-scale 1.4
   "*Scale used when converting from PDF/PS to PNG."
   :type 'number
   :group 'sage-view)
