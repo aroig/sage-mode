@@ -78,7 +78,7 @@
   :type 'string
   :group 'sage-view)
 
-(defvar sage-view-start-string "<html><\\(?:script type=\"math/tex\"\\)>"
+(defvar sage-view-start-string "<html><\\(?:span class=\"math\"\\|script type=\"math/tex\"\\)>"
   "HTML tags that identify the begining of a math formula in Sage
   output.")
 
