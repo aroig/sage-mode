@@ -19,7 +19,7 @@ pushd "$SPKG_DIR"
 hg clone .. .
 
 # Create autoloads
-emacs --batch -Q --load emacs/sage.el --funcall 'sage-update-autoloads'
+${EMACS-emacs} --batch -Q --load emacs/sage.el --funcall 'sage-update-autoloads'
 rm emacs/sage-load.el~
 
 popd
