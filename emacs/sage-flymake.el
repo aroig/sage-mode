@@ -1,4 +1,4 @@
-(eval-when-compile (require 'flymake))
+(eval-when-compile (require 'flymake nil t))
 
 (when (require 'flymake nil t)
   (defun flymake-pylint-init ()

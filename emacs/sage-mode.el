@@ -57,11 +57,11 @@
 ;;; Code:
 
 (eval-when-compile (require 'cl))
-(eval-when-compile (require 'hippie-exp))
-(eval-when-compile (require 'eshell))
-(eval-when-compile (require 'esh-cmd))
-(eval-when-compile (require 'esh-io))
-(eval-when-compile (require 'pcomplete))
+(eval-when-compile (require 'hippie-exp nil t))
+(eval-when-compile (require 'eshell nil t))
+(eval-when-compile (require 'esh-cmd nil t))
+(eval-when-compile (require 'esh-io nil t))
+(eval-when-compile (require 'pcomplete nil t))
 (require 'sage-compat)
 (require 'python)
 (require 'comint)

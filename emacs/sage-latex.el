@@ -13,11 +13,12 @@
 ;;; Code:
 
 (eval-when-compile
+  (require 'cl)
   (and (require 'tex-site nil t)
-       (require 'tex)
-       (require 'tex-buf))
-  (require 'org-latex nil t)
-  (require 'cl))
+       (require 'tex nil t)
+       (require 'tex-buf nil t))
+  (and (require 'org nil t)
+       (require 'org-latex nil t)))
 
 ;;;###autoload
 (defun sage-run-sagetex (name command file)
