@@ -16,7 +16,8 @@
   (and (require 'tex-site nil t)
        (require 'tex)
        (require 'tex-buf))
-  (require 'org-latex nil t))
+  (require 'org-latex nil t)
+  (require 'cl))
 
 ;;;###autoload
 (defun sage-run-sagetex (name command file)
@@ -95,6 +96,6 @@ Currently only `org-latex-to-pdf-process' is affected."
 ;;;###autoload
 (eval-after-load 'org-latex '(sage-org-latex-setup))
 
-(provide 'sage-auctex)
+(provide 'sage-latex)
 
 ;;; sage-latex.el ends here
