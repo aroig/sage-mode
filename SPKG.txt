@@ -38,8 +38,7 @@ Boston, MA 02110-1301, USA.
 == Dependencies ==
 
  * sage
- * GNU Emacs (with python.el, not python-mode.el) Currently the newest
-   python.el (which is a rewrite by fgallina) is not fully supported.
+ * GNU Emacs (with python.el, not python-mode.el)
 
 
 == Special Update/Build Instructions ==
@@ -69,6 +68,16 @@ Boston, MA 02110-1301, USA.
 
 
 == Changelog ==
+
+=== sage-mode-0.9 (Ivan Andrus, 2013-03-10) ===
+* Fixed completion with new ipython
+* Fixed interaction with new python.el
+* Fixed recognition of sage-view output
+* Added sage-attach-this-file
+* Make sage-view prettier
+
+=== sage-mode-0.8 (Ivan Andrus, 2012-09-12) ===
+* Many improvements and new maintainer.
 
 === sage-mode-0.7 (Nick Alexander, 2011-10-07) ===
 * Fix a bug reported by Ivan Andrus regarding font-lock and
