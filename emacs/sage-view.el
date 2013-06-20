@@ -371,11 +371,17 @@ writable directory."
   "Check whether there is a valid image associated with OV."
   (eq (car (overlay-get ov 'display)) 'image))
 
+(defun sage-view-cleanup-copied-text (str)
+  "Remove some boilerplate text added by Sage to all LaTeX output."
+  (replace-regexp-in-string
+   (regexp-quote "\\newcommand{\\Bold}[1]{\\mathbf{#1}}")
+   "" str))
+
 (defun sage-view-copy-text (ov)
   "Copy LATEX source of OV into the kill buffer."
   (let ((text (overlay-get ov 'math)))
     (if text
-	(kill-new text)
+	(kill-new (sage-view-cleanup-copied-text text))
       (message "No LaTeX code available"))))
 
 (defun sage-view-save-image (ov)
@@ -425,7 +431,7 @@ Make sure that there is a valid image associated with OV with
   (popup-menu
    `("Sage View Mode"
      ["Regenerate" (lambda () (interactive) (sage-view-regenerate ,ov))]
-     ["Copy Text" (lambda () (interactive) (sage-view-copy-text ,ov))]
+     ["Copy LaTeX" (lambda () (interactive) (sage-view-copy-text ,ov))]
      ["Save As..." (lambda () (interactive) (sage-view-save-image ,ov))
       `(sage-view-overlay-activep ,ov)]
      ["Zoom in" (lambda (multiplier) (interactive "p")
