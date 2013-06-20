@@ -46,6 +46,9 @@ Do nothing if not in string."
 (unless (fboundp 'python-beginning-of-statement)
   (defalias 'python-beginning-of-statement 'python-nav-beginning-of-statement))
 
+(unless (fboundp 'python-end-of-statement)
+  (defalias 'python-end-of-statement 'python-nav-end-of-statement))
+
 (unless (fboundp 'python-comment-line-p)
   (defalias 'python-comment-line-p 'python-info-current-line-comment-p))
 

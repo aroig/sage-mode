@@ -77,6 +77,8 @@
   (let ((map (make-keymap)))	  ;`sparse' doesn't allow binding to charsets.
     (define-key map [(control c) (control c)] 'sage-send-buffer)
     (define-key map [(control c) (control r)] 'sage-send-region)
+    (define-key map [(control c) (control d)] 'sage-send-defun)
+    (define-key map [(control c) (control e)] 'sage-send-statement)
     (define-key map [(control c) (control j)] 'sage-send-doctest)
     (define-key map [(control c) (control t)] 'sage-test)
     (define-key map [(control c) (control b)] 'sage-build)
@@ -90,6 +92,10 @@
 	 :help "Send current buffer to inferior sage"]
 	["Send Region" sage-send-region :active mark-active
 	 :help "Send current region to inferior sage"]
+	["Send Defun" sage-send-defun
+	 :help "Send current function definition to inferior sage"]
+	["Send Statement" sage-send-statement
+	 :help "Send current statement to inferior sage"]
 	["Send Doctest" sage-send-doctest
 	 :help "Send current doctest to inferior sage"]
 	"-"
@@ -731,7 +737,7 @@ The buffer is loaded using sage's \"load\" command."
 
 ;;;###autoload
 (defun sage-send-region (start end)
-  "Send the region to the inferior sage process.
+  "Send the region to the inferior Sage process.
 The region is treated as a temporary \".sage\" file with minimal
 processing.  The logic is that this command is intended to
 emulate interactive input, although this isn't perfect: sending
@@ -774,6 +780,20 @@ the region \"2\" does not print \"2\"."
       ;; positions past marker `orig-start'.  It has to be done *after*
       ;; `python-send-command''s call to `compilation-forget-errors'.
       (compilation-fake-loc orig-start f))))
+
+(defun sage-send-defun ()
+  "Send the current defun to the inferior Sage process via `sage-send-region'."
+  (interactive)
+  (sage-send-region (save-excursion (beginning-of-defun) (point))
+		    (save-excursion (end-of-defun) (point))))
+
+(defun sage-send-statement ()
+  "Send the current statement to the inferior Sage process via `sage-send-region'."
+  (interactive)
+  ;; We have to use the line-beginning-position since indentation is important in
+  ;; Python and sage-send-region creates a fake block in case things are indented.
+  (sage-send-region (save-excursion (python-beginning-of-statement) (line-beginning-position))
+		    (save-excursion (python-end-of-statement))))
 
 (defun sage-attach-this-file ()
   "Attach this file to the current Sage process."
