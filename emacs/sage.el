@@ -43,12 +43,12 @@
   :link '(url-link :tag "Homepage" "https://bitbucket.org/gvol/sage-mode/"))
 
 (defcustom inferior-sage-prompt (rx line-start (1+ (and (or "sage:" ">>>" "....." "..." "(Pdb)" "ipdb>" "(gdb)") " ")))
-  "Regular expression matching the SAGE prompt."
+  "Regular expression matching the Sage prompt."
   :group 'sage
   :type 'regexp)
 
 (defcustom inferior-sage-timeout 500000
-  "*How long to wait for a SAGE prompt at startup."
+  "*How long to wait for a Sage prompt at startup."
   :group 'sage
   :type 'integer)
 
@@ -143,7 +143,7 @@ See `sage-startup-before-prompt-hook' and `run-hooks'."
 
 ;; the -, + is for diff-mode
 (defcustom sage-test-prompt (rx line-start (? (or "-" "+")) (0+ (or space punct)) (1+ (or "sage: " ">>> ")))
-  "Regular expression matching the SAGE prompt of a single doctest line."
+  "Regular expression matching the Sage prompt of a single doctest line."
   :group 'sage-test
   :type 'regexp)
 
@@ -158,7 +158,7 @@ See `sage-startup-before-prompt-hook' and `run-hooks'."
   :group 'sage-build)
 
 (defcustom sage-rerun-command (format "%s" sage-command)
-  "Actual command used to rerun SAGE.
+  "Actual command used to rerun Sage.
 Additional arguments are added when the command is used by `rerun-sage' et al."
   :group 'sage-build
   :type 'string)

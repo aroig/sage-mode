@@ -1,4 +1,4 @@
-;;; sage-view.el --- Typeset SAGE output on the fly
+;;; sage-view.el --- Typeset Sage output on the fly
 ;; $Id: sage-view.el,v 1.2 2009/02/25 18:32:51 meulien Exp $
 
 ;; Copyright (C) 2008  Matthias Meulien, Nick Alexander

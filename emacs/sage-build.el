@@ -25,7 +25,7 @@
 
 	    ;; (goto-char (point-max))
 	    ;; (beginning-of-line)
-	    ;; (setq killed (looking-at "Process SAGE killed"))
+	    ;; (setq killed (looking-at "Process Sage killed"))
 	    ))
 	(progn
 	  (accept-process-output process 0 1)
@@ -41,12 +41,12 @@
   (sit-for 0)
   (with-current-buffer buffer
     (goto-char (point-max))
-    (insert "\nRestarting SAGE...\n\n")
+    (insert "\nRestarting Sage...\n\n")
     (goto-char (point-max))
     ;; (call-interactively 'run-sage) ;; this causes new buffers to appear, not good
-    (message "Restarting SAGE...")
+    (message "Restarting Sage...")
     (run-sage nil sage-rerun-command t) ;; restart (new command noshow)
-    (message "Restarting SAGE... done")
+    (message "Restarting Sage... done")
     (pop-to-buffer buffer)
     (goto-char (point-max))))
 
@@ -66,13 +66,13 @@ rerun the freshly built sage."
 	(buffer nil))
     (cond ((not bufs)
 	   (progn
-	     (message "Need a SAGE buffer to rerun SAGE in...")
+	     (message "Need a Sage buffer to rerun Sage in...")
 	     (call-interactively 'run-sage)))
 	  ((= 1 (length bufs))
 	   (setq buffer (car bufs)))
 	  (t (setq buffer
 		   (completing-read
-		    "Rerun SAGE in buffer: " bufs nil nil
+		    "Rerun Sage in buffer: " bufs nil nil
 		    (car bufs)))))
     ;; (kill-buffer buffer)
     (with-current-buffer buffer

@@ -1,4 +1,4 @@
-;;;_* sage-mode.el --- Major mode for editing SAGE code
+;;;_* sage-mode.el --- Major mode for editing Sage code
 
 ;; Copyright (C) 2007, 2008  Nick Alexander
 
@@ -71,7 +71,7 @@
 (require 'find-func)
 (require 'apropos)
 
-;;;_ + SAGE mode key bindings
+;;;_ + Sage mode key bindings
 
 (defvar sage-mode-map
   (let ((map (make-keymap)))	  ;`sparse' doesn't allow binding to charsets.
@@ -125,14 +125,14 @@
     map)
   "Keymap for `inferior-sage-mode'.")
 
-;;;_* Inferior SAGE major mode for interacting with a slave SAGE process
+;;;_* Inferior Sage major mode for interacting with a slave Sage process
 
 ;;;###autoload
 (define-derived-mode
   inferior-sage-mode
   inferior-python-mode
-  "Inferior SAGE"
-  "Major mode for interacting with an inferior SAGE process."
+  "Inferior Sage"
+  "Major mode for interacting with an inferior Sage process."
 
   (when (and (markerp comint-last-output-start)
   	     (not (marker-buffer comint-last-output-start)))
@@ -172,7 +172,7 @@
 
 
 (defun inferior-sage-wait-for-prompt ()
-  "Wait until the SAGE process is ready for input."
+  "Wait until the Sage process is ready for input."
   (message "Waiting for sage: prompt...")
   (with-current-buffer sage-buffer
     (let* ((sprocess (get-buffer-process sage-buffer))
@@ -180,9 +180,9 @@
 	   (timeout 0))
       (while (progn
 	       (if (not (eq (process-status sprocess) 'run))
-		   (error "SAGE process has died unexpectedly.")
+		   (error "Sage process has died unexpectedly.")
 		 (if (> (setq timeout (1+ timeout)) inferior-sage-timeout)
-		     (error "Timeout waiting for SAGE prompt. Check inferior-sage-timeout."))
+		     (error "Timeout waiting for Sage prompt. Check inferior-sage-timeout."))
 		 (accept-process-output nil 0 1)
 		 (sit-for 0)
 		 (goto-char (point-max))
@@ -282,7 +282,7 @@ sent normally.")
 	  )))))
 
 (defun sage-apropos (symbol)
-  (interactive "sApropos SAGE command: ")
+  (interactive "sApropos Sage command: ")
   (when (or (null symbol) (equal "" symbol))
     (error "No command"))
   (with-output-to-temp-buffer "*sage-apropos*"
@@ -295,7 +295,7 @@ sent normally.")
     t))
 
 (defun ipython-handle-magic-**? (proc string &optional match)
-  "Handle SAGE apropos **?."
+  "Handle Sage apropos **?."
   (when (string-match "\\(.*?\\)\\*\\*\\?" string)
     (sage-apropos (match-string 1 string))))
 
@@ -404,15 +404,15 @@ Does not delete the prompt."
       (if (with-current-buffer output-buffer (> (point-max) (point-min)))
 	  (display-buffer output-buffer))))))
 
-;;;_* SAGE process management
+;;;_* Sage process management
 
 (if (boundp 'python-shell-internal-buffer)
     (defvaralias 'sage-buffer 'python-shell-internal-buffer)
   (defvaralias 'sage-buffer 'python-buffer))
 ;; (defvar sage-buffer nil
-;;   "*The current SAGE process buffer.
+;;   "*The current Sage process buffer.
 
-;; Commands that send text from source buffers to SAGE processes have
+;; Commands that send text from source buffers to Sage processes have
 ;; to choose a process to send to.  This is determined by buffer-local
 ;; value of `sage-buffer'.  If its value in the current buffer,
 ;; i.e. both any local value and the default one, is nil, `run-sage'
@@ -420,8 +420,8 @@ Does not delete the prompt."
 
 ;; Whenever \\[run-sage] starts a new process, it resets the default
 ;; value of `sage-buffer' to be the new process's buffer and sets the
-;; buffer-local value similarly if the current buffer is in SAGE mode
-;; or Inferior SAGE mode, so that source buffer stays associated with a
+;; buffer-local value similarly if the current buffer is in Sage mode
+;; or Inferior Sage mode, so that source buffer stays associated with a
 ;; specific sub-process.
 
 ;; Use \\[sage-set-proc] to set the default value from a buffer with a
@@ -469,7 +469,7 @@ Does not delete the prompt."
 	   ;; (unless (sage-mode-p)
 ;; 	     (error "Not in a sage-mode buffer!"))
 	   (completing-read
-	    "SAGE buffer: " (sage-all-inferior-sage-buffers) nil nil
+	    "Sage buffer: " (sage-all-inferior-sage-buffers) nil nil
 	    (car (sage-all-inferior-sage-buffers))))))
   (let ((chosen-buffer (with-current-buffer buffer (current-buffer))))
     (setq sage-buffer chosen-buffer)
@@ -530,7 +530,7 @@ See variable `python-buffer'.  Starts a new process if necessary."
   (unless cmd
     (setq cmd sage-command))
   (with-current-buffer
-      (let* ((sage-buffer-base-name (format "*SAGE-%s*" (sage-current-branch)))
+      (let* ((sage-buffer-base-name (format "*Sage-%s*" (sage-current-branch)))
 	     (sage-buffer-name (if new (generate-new-buffer sage-buffer-base-name) sage-buffer-base-name))
 	     (cmdlist (sage-args-to-list cmd))
 	     ;; Set PYTHONPATH to import module emacs from emacs.py,
@@ -542,7 +542,7 @@ See variable `python-buffer'.  Starts a new process if necessary."
 	     (data-path (concat "PYTHONPATH=" orig-path path-sep data-directory))
 	     (process-environment
 	      (cons data-path process-environment)))
-	(apply 'make-comint-in-buffer "SAGE"
+	(apply 'make-comint-in-buffer "Sage"
 	       sage-buffer-name
 	       (car cmdlist) nil (cdr cmdlist)))))
 
@@ -559,10 +559,10 @@ See variable `python-buffer'.  Starts a new process if necessary."
 (defalias 'sage-run 'run-sage)
 ;;;###autoload
 (defun run-sage (&optional new cmd noshow)
-  "Run an inferior SAGE process, input and output via buffer *SAGE*.
+  "Run an inferior Sage process, input and output via buffer *Sage*.
 
-NEW non-nil means always create a new buffer and SAGE process.
-CMD is the SAGE command to run.
+NEW non-nil means always create a new buffer and Sage process.
+CMD is the Sage command to run.
 NOSHOW non-nil means don't show the buffer automatically.
 
 Normally, if there is a process already running in `sage-buffer',
@@ -576,7 +576,7 @@ Runs the hook `inferior-sage-mode-hook' \(after the
 buffer for a list of commands.)"
   (interactive "P")
   ;; Fixme: Consider making `sage-buffer' buffer-local as a buffer
-  ;; (not a name) in SAGE buffers from which `run-sage' &c is
+  ;; (not a name) in Sage buffers from which `run-sage' &c is
   ;; invoked.  Would support multiple processes better.
   (if (not (or new (sage-new-sage-p)))
       (unless noshow (pop-to-buffer sage-buffer))
@@ -609,10 +609,10 @@ buffer for a list of commands.)"
 
 (defun sage-set-buffer-name ()
   (interactive)
-  "Change the current SAGE buffer name to include the current branch."
+  "Change the current Sage buffer name to include the current branch."
   (when (sage-current-branch)
     (rename-buffer
-     (generate-new-buffer-name (format "*SAGE-%s*" (sage-current-branch))))))
+     (generate-new-buffer-name (format "*Sage-%s*" (sage-current-branch))))))
 
 (defun sage-root ()
   "Return SAGE_ROOT."
@@ -622,7 +622,7 @@ buffer for a list of commands.)"
     (nth 0 lst))))
 
 (defun sage-current-branch-link ()
-  "Return the current SAGE branch link, i.e., the target of devel/sage."
+  "Return the current Sage branch link, i.e., the target of devel/sage."
   (interactive)
   (save-match-data
     (let ((lst (split-string (shell-command-to-string (concat sage-command " -branch")))))
@@ -631,27 +631,27 @@ buffer for a list of commands.)"
 	"main"))))
 
 (defun sage-current-branch ()
-  "Return the current SAGE branch name."
+  "Return the current Sage branch name."
   (interactive)
   (save-match-data
     (if (and (inferior-sage-mode-p)
-	     (string-match "\\*SAGE-\\(.*\\)\\*" (buffer-name)))
+	     (string-match "\\*Sage-\\(.*\\)\\*" (buffer-name)))
 	(match-string 1 (buffer-name))
       (sage-current-branch-link))))
 
 (defun sage-current-devel-root ()
   (interactive)
-  "Return the current SAGE branch directory."
+  "Return the current Sage branch directory."
   (format "%s/devel/sage-%s" (sage-root) (sage-current-branch)))
 
-;;;_* SAGE major mode for editing SAGE library code
+;;;_* Sage major mode for editing Sage library code
 
 ;;;###autoload
 (define-derived-mode
   sage-mode
   python-mode
-  "SAGE"
-  "Major mode for editing SAGE files.
+  "Sage"
+  "Major mode for editing Sage files.
 
 The major entry points are:
 
@@ -683,7 +683,7 @@ and restart a fresh inferior sage in an existing buffer.
 ;; 			  `(("\\(\\*\\*\\)test\\(\\*\\*\\)" . 'font-lock-comment-face)))
   )
 
-;;;_* Treat SAGE code as Python source code
+;;;_* Treat Sage code as Python source code
 
 ;;;###autoload
 (add-to-list 'interpreter-mode-alist '("sage" . sage-mode))
@@ -783,7 +783,7 @@ the region \"2\" does not print \"2\"."
       (sage-send-command (format "attach(r'''%s''')" buffer-file-name) nil)
     (error "This buffer is not associated with a file.  Please save it first.")))
 
-;;;_* Integrate SAGE mode with Emacs
+;;;_* Integrate Sage mode with Emacs
 
 ;;;###autoload
 (defun sage-pcomplete-or-help ()
@@ -796,7 +796,7 @@ the region \"2\" does not print \"2\"."
       (when (python-current-word)
 	(ipython-describe-symbol (python-current-word))))))
 
-;;;_ + Set better grep defaults for SAGE and Pyrex code
+;;;_ + Set better grep defaults for Sage and Pyrex code
 
 ;; (eval-after-load "grep"
 ;;   (progn
@@ -879,7 +879,7 @@ Use current devel directory in inferior-sage-mode for hg-root if possible."
 	"^\\(.*\\):\\([0-9]+\\):\\([0-9]+\\):"
 	1 2 3))
 
-;; To add support for SAGE build and test errors to *compilation* buffers by
+;; To add support for Sage build and test errors to *compilation* buffers by
 ;; default, evaluate the following four lines.
 ;;
 ;; (add-to-list 'compilation-error-regexp-alist-alist sage-test-compilation-regexp)
@@ -888,14 +888,14 @@ Use current devel directory in inferior-sage-mode for hg-root if possible."
 ;; (add-to-list 'compilation-error-regexp-alist 'sage-build-compilation)
 
 (defun eshell-sage-command-hook (command args)
-  "Handle some SAGE invocations specially.
+  "Handle some Sage invocations specially.
 
-Without ARGS, run SAGE in an emacs `sage-mode' buffer.
+Without ARGS, run Sage in an emacs `sage-mode' buffer.
 
-With first ARGS starting with \"-b\" or \"-t\", run SAGE in an
+With first ARGS starting with \"-b\" or \"-t\", run Sage in an
 emacs `compilation-mode' buffer.
 
-Otherwise (for example, with ARGS \"-hg\", run SAGE at the eshell
+Otherwise (for example, with ARGS \"-hg\", run Sage at the eshell
 prompt as normal.
 
 This is an `eshell-named-command-hook' because only some parameters modify the
@@ -1118,7 +1118,7 @@ time, it does not handle multi-line input strings at all."
     ;; the t makes current-word strict: returns nil if point is not in the word
     (current-word t)))
 
-;;;_* IPython and SAGE completing reads
+;;;_* IPython and Sage completing reads
 
 ;;;_ + `ipython-completing-read-symbol' is `completing-read' for python symbols
 ;;; using IPython's *? mechanism
@@ -1274,10 +1274,10 @@ Interactively, prompt for SYMBOL."
       ;; make it easy to send doctests from a help buffer, for example
       (run-hooks 'sage-after-help-hook))))
 
-;;;_ + `sage-find-symbol' is `find-function' for SAGE.
+;;;_ + `sage-find-symbol' is `find-function' for Sage.
 
 (defun sage-find-symbol-command (symbol)
-  "Return SAGE command to fetch position of SYMBOL."
+  "Return Sage command to fetch position of SYMBOL."
   (format
    (concat "sage.misc.sageinspect.sage_getfile(%s), "
 	   "sage.misc.sageinspect.sage_getsourcelines(%s)[-1] + 1")
@@ -1289,7 +1289,7 @@ Interactively, prompt for SYMBOL."
 (defun sage-find-symbol-noselect (symbol)
   "Return a pair (BUFFER . POINT) pointing to the definition of SYMBOL.
 
-Queries SAGE to find the source file containing the definition of
+Queries Sage to find the source file containing the definition of
 FUNCTION in a buffer and the point of the definition.  The buffer
 is not selected.
 
@@ -1364,7 +1364,7 @@ See `sage-find-symbol' for details."
     (error "No symbol"))
   (sage-find-symbol-do-it symbol 'switch-to-buffer-other-frame))
 
-;;;_ + `try-complete-sage-symbol-partially' is a `hippie-expand' function for SAGE
+;;;_ + `try-complete-sage-symbol-partially' is a `hippie-expand' function for Sage
 
 (defun he-sage-symbol-beg ()
   (save-excursion
@@ -1379,7 +1379,7 @@ See `sage-find-symbol' for details."
       (point))))
 
 (defun try-complete-sage-symbol-partially (old)
-  "Try to complete as a SAGE symbol, as many characters as unique.
+  "Try to complete as a Sage symbol, as many characters as unique.
 
 The argument OLD is nil if this is the first call to this
 function, non-nil if this is a subsequent call.
@@ -1449,7 +1449,7 @@ otherwise."
 ;;;_* Make it easy to sagetest files and methods
 
 (defun sage-test-file-inline (file-name &optional method)
-  "Run sage-test on file FILE-NAME, with output to underlying the SAGE buffer.
+  "Run sage-test on file FILE-NAME, with output to underlying the Sage buffer.
 
 We take pains to test the correct module.
 
@@ -1457,7 +1457,7 @@ If METHOD is non-nil, try to test only the single method named METHOD.
 Interactively, try to find current method at point."
   (interactive
    (append
-    (comint-get-source "Load SAGE file: "
+    (comint-get-source "Load Sage file: "
 		       python-prev-dir/file python-source-modes t)
     (list current-prefix-arg)))
   (comint-check-source file-name)     ; Check to see if buffer needs saving.
@@ -1478,7 +1478,7 @@ If METHOD is non-nil, try to test only the single method named METHOD.
 Interactively, try to find current method at point."
   (interactive
    (append
-    (comint-get-source "Load SAGE file: "
+    (comint-get-source "Load Sage file: "
 		       python-prev-dir/file python-source-modes t)
     (list current-prefix-arg)))
   (comint-check-source file-name)     ; Check to see if buffer needs saving.
