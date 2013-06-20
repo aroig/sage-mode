@@ -352,7 +352,7 @@ writable directory."
       (setq sage-view-dir-name
 	    (make-temp-name (expand-file-name "emacs" tmp-dir))))
     (condition-case err
-	(make-directory sage-view-dir-name)
+	(make-directory sage-view-dir-name t)
       (error (message "Creation of `%s' failed: %s"
 		      sage-view-dir-name (error-message-string err))))))
 
