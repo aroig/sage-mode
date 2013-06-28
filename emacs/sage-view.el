@@ -298,7 +298,7 @@ WARNING: this communicates with the sage process.  Only use this
 when `sage-view' mode is enabled and sage is running."
   (interactive)
   (setq sage-view-inline-output-enabled t)
-  (python-send-receive-multiline "pretty_print_default(True);"))
+  (sage-send-command "pretty_print_default(True);print('\\n')"))
 
 ;;;###autoload
 (defun sage-view-disable-inline-output ()
@@ -307,7 +307,7 @@ WARNING: this communicates with the sage process.  Only use this
 when `sage-view' mode is enabled and sage is running."
   (interactive)
   (setq sage-view-inline-output-enabled nil)
-  (python-send-receive-multiline "pretty_print_default(False);"))
+  (sage-send-command "pretty_print_default(False);print('\\n')"))
 
 ;;;###autoload
 (defun sage-view-enable-inline-plots ()
