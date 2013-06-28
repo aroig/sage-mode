@@ -181,11 +181,15 @@ See also `sage-view-process-overlay'."
     (sit-for 0)))
 
 (defun sage-view-compute-resolution (scale)
-  (let ((w (* scale (/ (* 25.4 (display-pixel-width))
-	      (display-mm-width))))
-	(h (* scale (/ (* 25.4 (display-pixel-height))
-	      (display-mm-height)))))
-    (concat (int-to-string w) "x" (int-to-string h))))
+  (if (display-graphic-p)
+      ;; In a terminal, display-mm-width returns nil and
+      ;; display-pixel-width returns the number of characters.
+      (let ((w (* scale (/ (* 25.4 (display-pixel-width))
+			   (display-mm-width))))
+	    (h (* scale (/ (* 25.4 (display-pixel-height))
+			   (display-mm-height)))))
+	(concat (int-to-string w) "x" (int-to-string h)))
+    "72x72"))
 
 (defun sage-view-process-overlay (ov)
   "Associate a LATEX document to OV and start conversion process
@@ -458,6 +462,7 @@ PDF to PNG conversions." nil
   :lighter " Sage-View"
   (if sage-view
       (progn
+
 	(make-local-variable 'sage-view-dir-name)
 	(sage-view-create-temp)
 	(sage-view-enable-inline-output)
