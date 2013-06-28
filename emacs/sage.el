@@ -100,7 +100,8 @@ Additional arguments are added when the command is used by `run-sage' et al."
   :type 'string)
 
 (defun sage-send-startup-before-prompt-command ()
-  (sage-send-command sage-startup-before-prompt-command nil))
+  (when sage-startup-before-prompt-command
+    (sage-send-command sage-startup-before-prompt-command nil)))
 
 (defun sage-send-startup-after-prompt-command ()
   (sage-send-command "" t)
