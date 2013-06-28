@@ -467,15 +467,13 @@ PDF to PNG conversions." nil
 	(sage-view-create-temp)
 	(sage-view-enable-inline-output)
 	(sage-view-enable-inline-plots)
-	(make-local-variable 'comint-preoutput-filter-functions)
-	(make-local-variable 'comint-output-filter-function)
+	(make-local-variable 'comint-output-filter-functions)
 	(add-hook 'comint-output-filter-functions 'sage-view-output-filter)
 	(add-hook 'kill-buffer-hook 'sage-view-delete-temp))
     (progn
       (sage-view-disable-inline-output)
       (sage-view-disable-inline-plots)
-      (remove-hook 'comint-output-filter-functions 'sage-view-output-filter)
-      (remove-hook 'comint-preoutput-filter-functions 'sage-view-preoutput-filter))))
+      (remove-hook 'comint-output-filter-functions 'sage-view-output-filter))))
 
 (provide 'sage-view)
 ;;; sage-view.el ends here
