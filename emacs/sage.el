@@ -238,4 +238,15 @@ version of `sage-mode'!"
   (let ((generated-autoload-file (concat sage-autoloads-location "sage-load.el")))
     (update-directory-autoloads sage-autoloads-location)))
 
+;; Automatic decompression and mode support for sws and spkg files
+(when (require 'jka-compr nil t)
+  (add-to-list 'jka-compr-compression-info-list
+	       ["\\.sws\\'" "sws-ing" "bzip2" nil "unsws-ing" "bzip2" ("-d") t nil "BZh"])
+  (add-to-list 'jka-compr-compression-info-list
+	       ["\\.spkg\\'" "spkg-ing" "bzip2" nil "unspkg-ing" "bzip2" ("-d") t nil "BZh"])
+  (jka-compr-update)
+
+  (add-to-list 'auto-mode-alist
+	       '("\\.\\(?:spkg\\|sws\\)\\'" . tar-mode)))
+
 (provide 'sage)
