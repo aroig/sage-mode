@@ -297,8 +297,9 @@ Function to be inserted in `comint-output-filter-functions'."
 WARNING: this communicates with the sage process.  Only use this
 when `sage-view' mode is enabled and sage is running."
   (interactive)
+  (sage-send-command "pretty_print_default(True);print('\\n')")
   (setq sage-view-inline-output-enabled t)
-  (sage-send-command "pretty_print_default(True);print('\\n')"))
+  (sage-view-update-modeline))
 
 ;;;###autoload
 (defun sage-view-disable-inline-output ()
@@ -306,8 +307,9 @@ when `sage-view' mode is enabled and sage is running."
 WARNING: this communicates with the sage process.  Only use this
 when `sage-view' mode is enabled and sage is running."
   (interactive)
+  (sage-send-command "pretty_print_default(False);print('\\n')")
   (setq sage-view-inline-output-enabled nil)
-  (sage-send-command "pretty_print_default(False);print('\\n')"))
+  (sage-view-update-modeline))
 
 ;;;###autoload
 (defun sage-view-enable-inline-plots ()
@@ -315,7 +317,6 @@ when `sage-view' mode is enabled and sage is running."
 WARNING: this communicates with the sage process.  Only use this
 when `sage-view' mode is enabled and sage is running."
   (interactive)
-  (setq sage-view-inline-plots-enabled t)
   (python-send-receive-multiline "sage.plot.plot.DOCTEST_MODE = True;")
   ;; sage 4.7
   (python-send-receive-multiline
@@ -324,7 +325,9 @@ when `sage-view' mode is enabled and sage is running."
   ;; sage 5.0
   (python-send-receive-multiline
    (format "if hasattr(sage.plot,'graphics'): sage.plot.graphics.DOCTEST_MODE_FILE = '%s/sage-view.png';\n"
-	   sage-view-dir-name)))
+	   sage-view-dir-name))
+  (setq sage-view-inline-plots-enabled t)
+  (sage-view-update-modeline))
 
 ;;;###autoload
 (defun sage-view-disable-inline-plots ()
@@ -332,12 +335,13 @@ when `sage-view' mode is enabled and sage is running."
 WARNING: this communicates with the sage process.  Only use this
 when `sage-view' mode is enabled and sage is running."
   (interactive)
-  (setq sage-view-inline-plots-enabled nil)
   (python-send-receive-multiline "sage.plot.plot.DOCTEST_MODE = False;")
   ;; sage 4.7
   (python-send-receive-multiline "sage.plot.plot.DOCTEST_MODE_FILE = None;")
   ;; sage 5.0
-  (python-send-receive-multiline "if hasattr(sage.plot,'graphics'): sage.plot.graphics.DOCTEST_MODE_FILE = None;\n"))
+  (python-send-receive-multiline "if hasattr(sage.plot,'graphics'): sage.plot.graphics.DOCTEST_MODE_FILE = None;\n")
+  (setq sage-view-inline-plots-enabled nil)
+  (sage-view-update-modeline))
 
 (defun sage-view-create-temp ()
   "Create a temporary directory and set `sage-view-dir-name'
@@ -450,6 +454,21 @@ Make sure that there is a valid image associated with OV with
       `(sage-view-overlay-activep ,ov)])
    ev))
 
+;; Inspired by c-update-modeline
+(defun sage-view-update-modeline ()
+  "Update modeline to include information about whether sage-view is enabled."
+  (when (eq major-mode 'inferior-sage-mode)
+    (let ((fmt (format "/%s%s"
+		       (if sage-view-inline-plots-enabled "p" "")
+		       (if sage-view-inline-output-enabled "t" "")))
+	  (bare-mode-name (if (string-match "\\(^[^/]*\\)/" mode-name)
+			      (match-string 1 mode-name)
+			    mode-name)))
+      (setq mode-name
+	    (if (> (length fmt) 1)
+		(concat bare-mode-name fmt)
+	      bare-mode-name))
+      (force-mode-line-update))))
 
 ;; TODO: require a graphics console before turning it on, or make it possile to turn it on
 ;;;###autoload
@@ -462,7 +481,6 @@ PDF to PNG conversions." nil
   :lighter " Sage-View"
   (if sage-view
       (progn
-
 	(make-local-variable 'sage-view-dir-name)
 	(sage-view-create-temp)
 	(sage-view-enable-inline-output)
