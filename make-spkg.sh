@@ -19,6 +19,9 @@ pushd "$SPKG_DIR"
 hg clone .. .
 
 # Create autoloads
+(grep sage-mode-version emacs/sage.el | grep "$VERSION" >/dev/null 2>/dev/null) \
+    || (echo; echo "WARNING: version number in sage.el doesn't match $VERSION!"; echo)
+
 ${EMACS-emacs} --batch -Q --load emacs/sage.el --funcall 'sage-update-autoloads'
 rm emacs/sage-load.el~
 
