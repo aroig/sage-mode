@@ -127,7 +127,21 @@
 	["Build Sage" sage-build
 	 :help "Build sage with \"sage -b\""]
 	["Run Doctests" sage-test
-	 :help "Run doctests with \"sage -t\""]))
+	 :help "Run doctests with \"sage -t\""]
+	"-"
+	["Enable Inline Plots" sage-view-enable-inline-plots
+	 :help "Enable display of plots in the inferior Sage buffer."
+	 :visible (not sage-view-inline-plots-enabled)]
+	["Disable Inline Plots" sage-view-disable-inline-plots
+	 :help "Enable display of plots in the inferior Sage buffer."
+	 :visible sage-view-inline-plots-enabled]
+
+	["Enable Typeset Output" sage-view-enable-inline-output
+	 :help "Enable typesetting of output in the inferior Sage buffer."
+	 :visible (not sage-view-inline-output-enabled)]
+	["Disable Typeset Output" sage-view-disable-inline-output
+	 :help "Disable typesetting of output in the inferior Sage buffer."
+	 :visible sage-view-inline-output-enabled]))
     map)
   "Keymap for `inferior-sage-mode'.")
 
