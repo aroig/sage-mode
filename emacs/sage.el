@@ -34,7 +34,7 @@
 
 (load "sage-load" t)
 
-(defconst sage-mode-version "0.8"
+(defconst sage-mode-version "0.10"
   "Version of `sage-mode'.")
 
 (defgroup sage nil "Major mode for editing and running Sage"
