@@ -1,8 +1,8 @@
-;;;; `Pyrex' mode.
+;;;; `Cython' mode.
 
-;; We define `pyrex-mode', a derived mode of `python-mode'.  We add some
+;; We define `cython-mode', a derived mode of `python-mode'.  We add some
 ;; font-lock keywords for things like cdef and cpdef, and we redefine some
-;; `python-' functions to respect the additional pyrex keywords where
+;; `python-' functions to respect the additional cython keywords where
 ;; possible.  The advice is installed to not override in pure `python-mode'
 ;; buffers.
 
@@ -11,22 +11,22 @@
 (require 'sage-compat)
 
 ;;;###autoload
-(add-to-list 'auto-mode-alist '("\\.pyx\\'" . pyrex-mode))
+(add-to-list 'auto-mode-alist '("\\.pyx\\'" . cython-mode))
 ;;;###autoload
-(add-to-list 'auto-mode-alist '("\\.pxi\\'" . pyrex-mode))
+(add-to-list 'auto-mode-alist '("\\.pxi\\'" . cython-mode))
 ;;;###autoload
-(add-to-list 'auto-mode-alist '("\\.pxd\\'" . pyrex-mode))
+(add-to-list 'auto-mode-alist '("\\.pxd\\'" . cython-mode))
 
 ;;;###autoload
-(define-derived-mode pyrex-mode sage-mode "Pyrex"
+(define-derived-mode cython-mode sage-mode "Cython"
   (set (make-local-variable 'outline-regexp)
        (rx (* space) (or "class" "def" "cdef" "cpdef" "elif" "else" "except" "finally"
 			 "for" "if" "try" "while" "with")
 	   symbol-end))
   (set (make-local-variable 'beginning-of-defun-function)
-       #'pyrex-beginning-of-defun)
+       #'cython-beginning-of-defun)
   (set (make-local-variable 'end-of-defun-function)
-       #'pyrex-end-of-defun)
+       #'cython-end-of-defun)
   (font-lock-add-keywords
    nil
    `((,(concat "\\<\\(NULL"
@@ -38,14 +38,14 @@
 	       "\\)\\>")
       1 font-lock-keyword-face t))))
 
-;; overload some python functions to better handle pyrex code
-(defun pyrex-mode-p ()
-  "Return t if we're in a pyrex-mode buffer."
-  (derived-mode-p 'pyrex-mode))
+;; overload some python functions to better handle cython code
+(defun cython-mode-p ()
+  "Return t if we're in a cython-mode buffer."
+  (derived-mode-p 'cython-mode))
 
 (defvar python-font-lock-keywords
   `(,(rx symbol-start
-	 ;; From v 2.5 reference, ง keywords.
+	 ;; From v 2.5 reference, ยง keywords.
 	 ;; def and class dealt with separately below
 	 (or "and" "as" "assert" "break" "continue" "del" "elif" "else"
 	     "except" "exec" "finally" "for" "from" "global" "if"
@@ -54,7 +54,7 @@
              ;; Not real keywords, but close enough to be fontified as such
              "self" "True" "False")
 	 symbol-end)
-    (,(rx symbol-start "None" symbol-end) ; See ง Keywords in 2.5 manual.
+    (,(rx symbol-start "None" symbol-end) ; See ยง Keywords in 2.5 manual.
      . font-lock-constant-face)
     ;; Definitions
     (,(rx symbol-start (group "class") (1+ space) (group (1+ (or word ?_))))
@@ -67,8 +67,8 @@
     (,(rx "@" (1+ (or word ?_))) ; decorators
     (0 font-lock-preprocessor-face))))
 
-(defun pyrex-open-block-statement-p (&optional bos)
-  "Return non-nil if statement at point opens a Pyrex block.
+(defun cython-open-block-statement-p (&optional bos)
+  "Return non-nil if statement at point opens a Cython block.
 BOS non-nil means point is known to be at beginning of statement."
   (save-excursion
     (unless bos (python-beginning-of-statement))
@@ -82,12 +82,12 @@ BOS non-nil means point is known to be at beginning of statement."
   ;; this strange incantation calls the original python-open-block-statement
   ;; unless we're in a derived mode.  The (setq ad-return-value ...) is how
   ;; one modifies the return value of advised functions.
-  (if (not (or (sage-mode-p) (pyrex-mode-p)))
+  (if (not (or (sage-mode-p) (cython-mode-p)))
       ad-do-it
-    (setq ad-return-value (apply 'pyrex-open-block-statement-p rest))))
+    (setq ad-return-value (apply 'cython-open-block-statement-p rest))))
 
-(defun pyrex-beginning-of-defun ()
-  "`beginning-of-defun-function' for Pyrex.
+(defun cython-beginning-of-defun ()
+  "`beginning-of-defun-function' for Cython.
 Finds beginning of innermost nested class or method definition.
 Returns the name of the definition found at the end, or nil if
 reached start of buffer."
@@ -119,8 +119,8 @@ reached start of buffer."
 	  (setq found t)))))
 
 
-(defun pyrex-end-of-defun ()
-  "`end-of-defun-function' for Pyrex.
+(defun cython-end-of-defun ()
+  "`end-of-defun-function' for Cython.
 Finds end of innermost nested class or method definition."
   (let ((orig (point))
 	(pattern (rx line-start (0+ space) (or "def" "cdef" "cpdef" "class") space)))
@@ -170,13 +170,13 @@ Finds end of innermost nested class or method definition."
   ;; this strange incantation calls the original python function unless we're
   ;; in a derived mode.  The (setq ad-return-value ...) is how one modifies
   ;; the return value of advised functions.
-  (if (not (pyrex-mode-p))
+  (if (not (cython-mode-p))
       ad-do-it
-    (setq ad-return-value (apply 'pyrex-end-of-defun rest))))
+    (setq ad-return-value (apply 'cython-end-of-defun rest))))
 
 ;; Fixme: Consider top-level assignments, imports, &c.
-(defun pyrex-current-defun ()
-  "`add-log-current-defun-function' for Pyrex."
+(defun cython-current-defun ()
+  "`add-log-current-defun-function' for Cython."
   (save-excursion
     ;; Move up the tree of nested `class' and `def' blocks until we
     ;; get to zero indentation, accumulating the defined names.
@@ -197,8 +197,8 @@ Finds end of innermost nested class or method definition."
   ;; this strange incantation calls the original python function unless we're
   ;; in a derived mode.  The (setq ad-return-value ...) is how one modifies
   ;; the return value of advised functions.
-  (if (not (pyrex-mode-p))
+  (if (not (cython-mode-p))
       ad-do-it
-    (setq ad-return-value (apply 'pyrex-current-defun rest))))
+    (setq ad-return-value (apply 'cython-current-defun rest))))
 
-(provide 'pyrex)
+(provide 'cython)

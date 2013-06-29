@@ -64,6 +64,14 @@ Do nothing if not in string."
 (unless (fboundp 'python-end-of-block)
   (defalias 'python-end-of-block 'python-nav-end-of-block))
 
+;; Changed pyrex to cython
+(define-obsolete-function-alias 'pyrex-mode 'cython-mode "0.10")
+(define-obsolete-function-alias 'pyrex-mode-p 'cython-mode-p "0.10")
+(define-obsolete-function-alias 'pyrex-open-block-statement-p 'cython-open-block-statement-p "0.10")
+(define-obsolete-function-alias 'pyrex-beginning-of-defun 'cython-beginning-of-defun "0.10")
+(define-obsolete-function-alias 'pyrex-end-of-defun 'cython-end-of-defun "0.10")
+(define-obsolete-function-alias 'pyrex-current-defun 'cython-current-defun "0.10")
+
 (provide 'sage-compat)
 
 ;;; sage-compat.el ends here
