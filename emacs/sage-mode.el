@@ -583,7 +583,9 @@ See variable `python-buffer'.  Starts a new process if necessary."
 
 NEW non-nil means always create a new buffer and Sage process.
 CMD is the Sage command to run.
-NOSHOW non-nil means don't show the buffer automatically.
+NOSHOW non-nil means toggle whether to show the buffer automatically.
+The default value depends on `sage-display-inferior-buffer'.
+If NOSHOW is t (from lisp), then the buffer will not be displayed.
 
 Normally, if there is a process already running in `sage-buffer',
 switch to that buffer.  A new process is started if: one isn't
@@ -594,10 +596,26 @@ documentation for `sage-buffer'.
 Runs the hook `inferior-sage-mode-hook' \(after the
 `comint-mode-hook' is run).  \(Type \\[describe-mode] in the process
 buffer for a list of commands.)"
-  (interactive "P")
   ;; Fixme: Consider making `sage-buffer' buffer-local as a buffer
   ;; (not a name) in Sage buffers from which `run-sage' &c is
   ;; invoked.  Would support multiple processes better.
+  (interactive (list
+		(and current-prefix-arg
+		     (not (eq '- current-prefix-arg)))
+		nil ;; command
+		(if (or (eq '- current-prefix-arg)
+			(and (numberp current-prefix-arg)
+			     (< current-prefix-arg 0)))
+		    'toggle
+		  nil)))
+  ;; Use the prefix argument to toggle
+  (setq noshow (cond
+		((eq noshow t)
+		 t)
+		(noshow
+		 sage-display-inferior-buffer)
+		(t
+		 (not sage-display-inferior-buffer))))
   (if (not (or new (sage-new-sage-p)))
       (unless noshow (pop-to-buffer sage-buffer))
     (setq sage-buffer (if (sage-called-interactively-p 'all)

@@ -87,7 +87,7 @@ Additional arguments are added when the command is used by `run-sage' et al."
 (defcustom sage-quit-debugger-automatically t
   "*Quit debugger automatically before sending a docstring, region or buffer to the sage slave."
   :group 'sage
-  :type 'bool)
+  :type 'boolean)
 
 (defcustom sage-startup-before-prompt-command "%colors NoColor"
   "*Send this command to the sage slave each time it is executed by `run-sage', BEFORE the first prompt is seen."
@@ -121,6 +121,11 @@ See `sage-startup-after-prompt-hook' and `run-hooks'."
 See `sage-startup-before-prompt-hook' and `run-hooks'."
   :group 'sage
   :type 'hook)
+
+(defcustom sage-display-inferior-buffer t
+  "*If non-nil then display the *Sage* buffer after it is create with `run-sage'."
+  :group 'sage
+  :type 'boolean)
 
 (defun sage-default-after-help-function ()
   "Make it easy to run doctests in help buffers."
