@@ -874,10 +874,13 @@ Match group 1 will be replaced with devel/sage-branch")
   "Warn if sage FILE is in site-packages and offer to find current branch version."
   (let ((f (buffer-file-name (current-buffer))))
     (and f (string-match sage-site-packages-regexp f)
-         (if (y-or-n-p "This is a sage site-packages file, open the real file? ")
-             (sage-jump-to-development-version)
-           (push '(:propertize "SAGE-SITE-PACKAGES-FILE:" face font-lock-warning-face)
-                 mode-line-buffer-identification)))))
+         (let ((should-jump (if (eq sage-site-packages-find-original 'query)
+				(y-or-n-p "This is a sage site-packages file, open the real file? ")
+			      sage-site-packages-find-original)))
+	   (if should-jump
+	       (sage-jump-to-development-version)
+	     (push '(:propertize "SAGE-SITE-PACKAGES-FILE:" face font-lock-warning-face)
+		   mode-line-buffer-identification))))))
 
 (defun sage-development-version (filename)
   "If FILENAME is in site-packages, current branch version, else FILENAME."

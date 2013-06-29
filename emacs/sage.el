@@ -169,6 +169,15 @@ Additional arguments are added when the command is used by `rerun-sage' et al."
   :group 'sage-build
   :type 'string)
 
+(defcustom sage-site-packages-find-original 'query
+  "If non-nil automatically jump to the development version of files.
+Such files are identified by `sage-site-packages-regexp'.  If equal to
+the symbol query then ask every time."
+  :group 'sage
+  :type '(choice (const :tag "Always" t)
+		 (const :tag "Never" nil)
+		 (const :tag "Ask" query)))
+
 (defgroup sage-view nil "Typeset Sage output on the fly"
   :group 'sage
   :prefix "sage-view-"
