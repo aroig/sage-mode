@@ -32,8 +32,6 @@
 
 ;;; Code:
 
-(load "sage-load" t)
-
 (defconst sage-mode-version "0.10"
   "Version of `sage-mode'.")
 
@@ -248,5 +246,7 @@ version of `sage-mode'!"
 
   (add-to-list 'auto-mode-alist
 	       '("\\.\\(?:spkg\\|sws\\)\\'" . tar-mode)))
+
+(load "sage-load" t)
 
 (provide 'sage)
