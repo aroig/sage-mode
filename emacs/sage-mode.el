@@ -1122,7 +1122,7 @@ If ECHO-INPUT is non-nil, echo input in process buffer."
       ;; Work around bug in python-send-command or compilation-forget-errors
       (unless (hash-table-p compilation-locs)
 	(compilation-minor-mode 1))
-      (python-send-string command))))
+      (python-send-string (concat command "\nprint('\\n')")))))
 
 (defun python-send-receive-to-buffer (command buffer &optional echo-output)
   "Send COMMAND to inferior Python (if any) and send output to BUFFER.

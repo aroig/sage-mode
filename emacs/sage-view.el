@@ -296,7 +296,7 @@ Function to be inserted in `comint-output-filter-functions'."
 WARNING: this communicates with the sage process.  Only use this
 when `sage-view' mode is enabled and sage is running."
   (interactive)
-  (sage-send-command "pretty_print_default(True);print('\\n')")
+  (sage-send-command "pretty_print_default(True)")
   (setq sage-view-inline-output-enabled t)
   (sage-view-update-modeline))
 
@@ -306,7 +306,7 @@ when `sage-view' mode is enabled and sage is running."
 WARNING: this communicates with the sage process.  Only use this
 when `sage-view' mode is enabled and sage is running."
   (interactive)
-  (sage-send-command "pretty_print_default(False);print('\\n')")
+  (sage-send-command "pretty_print_default(False)")
   (setq sage-view-inline-output-enabled nil)
   (sage-view-update-modeline))
 
