@@ -53,7 +53,7 @@ Do nothing if not in string."
   (defalias 'python-comment-line-p 'python-info-current-line-comment-p))
 
 (unless (fboundp 'python-open-block-statement-p)
-  (defalias 'python-open-block-statement-p 'python-info-beginning-of-block-statement-p))
+  (defalias 'python-open-block-statement-p 'python-info-beginning-of-block-p))
 
 (unless (fboundp 'python-previous-statement)
   (defalias 'python-previous-statement #'python-nav-backward-sentence))
