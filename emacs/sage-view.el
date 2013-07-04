@@ -1,5 +1,4 @@
 ;;; sage-view.el --- Typeset Sage output on the fly
-;; $Id: sage-view.el,v 1.2 2009/02/25 18:32:51 meulien Exp $
 
 ;; Copyright (C) 2008  Matthias Meulien, Nick Alexander
 
@@ -317,15 +316,17 @@ when `sage-view' mode is enabled and sage is running."
 WARNING: this communicates with the sage process.  Only use this
 when `sage-view' mode is enabled and sage is running."
   (interactive)
-  (python-send-receive-multiline "sage.plot.plot.DOCTEST_MODE = True;")
+  (sage-send-command "sage.plot.plot.DOCTEST_MODE = True;")
   ;; sage 4.7
-  (python-send-receive-multiline
+  (sage-send-command
    (format "sage.plot.plot.DOCTEST_MODE_FILE = '%s/sage-view.png';"
 	   sage-view-dir-name))
   ;; sage 5.0
-  (python-send-receive-multiline
+  (sage-send-command
    (format "if hasattr(sage.plot,'graphics'): sage.plot.graphics.DOCTEST_MODE_FILE = '%s/sage-view.png';\n"
 	   sage-view-dir-name))
+  ;; sage 5.something
+  (sage-send-command "if hasattr(sage,'doctest'): sage.doctest.DOCTEST_MODE = True;\n")
   (setq sage-view-inline-plots-enabled t)
   (sage-view-update-modeline))
 
@@ -335,11 +336,13 @@ when `sage-view' mode is enabled and sage is running."
 WARNING: this communicates with the sage process.  Only use this
 when `sage-view' mode is enabled and sage is running."
   (interactive)
-  (python-send-receive-multiline "sage.plot.plot.DOCTEST_MODE = False;")
+  (sage-send-command "sage.plot.plot.DOCTEST_MODE = False;")
   ;; sage 4.7
-  (python-send-receive-multiline "sage.plot.plot.DOCTEST_MODE_FILE = None;")
+  (sage-send-command "sage.plot.plot.DOCTEST_MODE_FILE = None;")
   ;; sage 5.0
-  (python-send-receive-multiline "if hasattr(sage.plot,'graphics'): sage.plot.graphics.DOCTEST_MODE_FILE = None;\n")
+  (sage-send-command "if hasattr(sage.plot,'graphics'): sage.plot.graphics.DOCTEST_MODE_FILE = None;\n")
+  ;; sage 5.something
+  (sage-send-command "if hasattr(sage,'doctest'): sage.doctest.DOCTEST_MODE = False;\n")
   (setq sage-view-inline-plots-enabled nil)
   (sage-view-update-modeline))
 
