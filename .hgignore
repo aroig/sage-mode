@@ -1,3 +1,4 @@
 .*\.elc
 .*\.spkg
 sage-load\.el
+.DS_Store
