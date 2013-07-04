@@ -198,6 +198,7 @@
     (let* ((sprocess (get-buffer-process sage-buffer))
 	   (success nil)
 	   (timeout 0))
+      (sage-send-command "" t)
       (while (progn
 	       (if (not (eq (process-status sprocess) 'run))
 		   (error "Sage process has died unexpectedly.")
