@@ -296,7 +296,7 @@ Function to be inserted in `comint-output-filter-functions'."
 WARNING: this communicates with the sage process.  Only use this
 when `sage-view' mode is enabled and sage is running."
   (interactive)
-  (sage-send-command "pretty_print_default(True)")
+  (sage-send-command "pretty_print_default(True)" nil t)
   (setq sage-view-inline-output-enabled t)
   (sage-view-update-modeline))
 
@@ -306,7 +306,7 @@ when `sage-view' mode is enabled and sage is running."
 WARNING: this communicates with the sage process.  Only use this
 when `sage-view' mode is enabled and sage is running."
   (interactive)
-  (sage-send-command "pretty_print_default(False)")
+  (sage-send-command "pretty_print_default(False)" nil t)
   (setq sage-view-inline-output-enabled nil)
   (sage-view-update-modeline))
 
@@ -316,17 +316,19 @@ when `sage-view' mode is enabled and sage is running."
 WARNING: this communicates with the sage process.  Only use this
 when `sage-view' mode is enabled and sage is running."
   (interactive)
-  (sage-send-command "sage.plot.plot.DOCTEST_MODE = True;")
+  (sage-send-command "sage.plot.plot.DOCTEST_MODE = True;" nil t)
   ;; sage 4.7
   (sage-send-command
    (format "sage.plot.plot.DOCTEST_MODE_FILE = '%s/sage-view.png';"
-	   sage-view-dir-name))
+	   sage-view-dir-name)
+   nil t)
   ;; sage 5.0
   (sage-send-command
    (format "if hasattr(sage.plot,'graphics'): sage.plot.graphics.DOCTEST_MODE_FILE = '%s/sage-view.png';\n"
-	   sage-view-dir-name))
+	   sage-view-dir-name)
+   nil t)
   ;; sage 5.something
-  (sage-send-command "if hasattr(sage,'doctest'): sage.doctest.DOCTEST_MODE = True;\n")
+  (sage-send-command "if hasattr(sage,'doctest'): sage.doctest.DOCTEST_MODE = True;\n" nil t)
   (setq sage-view-inline-plots-enabled t)
   (sage-view-update-modeline))
 
@@ -336,13 +338,13 @@ when `sage-view' mode is enabled and sage is running."
 WARNING: this communicates with the sage process.  Only use this
 when `sage-view' mode is enabled and sage is running."
   (interactive)
-  (sage-send-command "sage.plot.plot.DOCTEST_MODE = False;")
+  (sage-send-command "sage.plot.plot.DOCTEST_MODE = False;" nil t)
   ;; sage 4.7
-  (sage-send-command "sage.plot.plot.DOCTEST_MODE_FILE = None;")
+  (sage-send-command "sage.plot.plot.DOCTEST_MODE_FILE = None;" nil t)
   ;; sage 5.0
-  (sage-send-command "if hasattr(sage.plot,'graphics'): sage.plot.graphics.DOCTEST_MODE_FILE = None;\n")
+  (sage-send-command "if hasattr(sage.plot,'graphics'): sage.plot.graphics.DOCTEST_MODE_FILE = None;\n" nil t)
   ;; sage 5.something
-  (sage-send-command "if hasattr(sage,'doctest'): sage.doctest.DOCTEST_MODE = False;\n")
+  (sage-send-command "if hasattr(sage,'doctest'): sage.doctest.DOCTEST_MODE = False;\n" nil t)
   (setq sage-view-inline-plots-enabled nil)
   (sage-view-update-modeline))
 

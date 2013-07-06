@@ -1104,10 +1104,13 @@ Block while waiting for output."
 ;;   (message "%s" (buffer-name)))
 
 ;;;###autoload
-(defun sage-send-command (command &optional echo-input)
+(defun sage-send-command (command &optional echo-input needs-prompt)
   "Evaluate COMMAND in inferior Python process.
 
-If ECHO-INPUT is non-nil, echo input in process buffer."
+If ECHO-INPUT is non-nil, echo input in process buffer.
+If NEEDS-PROMPT is non-nil, sents a print newline statement in an attempt
+to ensure that the prompt appears correctly.
+"
   (interactive "sCommand: ")
   (accept-process-output nil 0 1)
   (with-current-buffer (process-buffer (python-proc))
@@ -1123,7 +1126,8 @@ If ECHO-INPUT is non-nil, echo input in process buffer."
       ;; Work around bug in python-send-command or compilation-forget-errors
       (unless (hash-table-p compilation-locs)
 	(compilation-minor-mode 1))
-      (python-send-string (concat command "\nprint('\\n')")))))
+      (python-send-string (concat command
+				  (if needs-prompt "\nprint('\\n')" nil))))))
 
 (defun python-send-receive-to-buffer (command buffer &optional echo-output)
   "Send COMMAND to inferior Python (if any) and send output to BUFFER.
@@ -1523,7 +1527,7 @@ Interactively, try to find current method at point."
 	 (directory (car directory-module))
 	 (module (cdr directory-module))
 	 (command (format "sage.misc.sagetest.sagetest(%s)" module)))
-    (sage-send-command command nil)))
+    (sage-send-command command nil)))	;TODO
 
 (defun sage-test-file-to-buffer (file-name &optional method)
   "Run sage-test on file FILE-NAME, with output to a new buffer.

@@ -99,7 +99,7 @@ Additional arguments are added when the command is used by `run-sage' et al."
 
 (defun sage-send-startup-before-prompt-command ()
   (when sage-startup-before-prompt-command
-    (sage-send-command sage-startup-before-prompt-command nil)))
+    (sage-send-command sage-startup-before-prompt-command nil t)))
 
 (defun sage-send-startup-after-prompt-command ()
   (sage-send-command "" t)
