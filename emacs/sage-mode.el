@@ -1156,19 +1156,22 @@ This is an alternate `python-send-receive' that uses temporary buffers and
 This implementation handles multi-line output strings gracefully.  At this
 time, it does not handle multi-line input strings at all."
   (interactive "sCommand: ")
-  (with-temp-buffer
-    ;; Grab what Python has to say
-    (comint-redirect-send-command-to-process
-     command (current-buffer) (python-proc) nil t)
-    ;; Wait for the redirection to complete
-    (with-current-buffer (process-buffer (python-proc))
-      (while (null comint-redirect-completed)
-	(accept-process-output nil 1)))
-    ;; Return the output
-    (let ((output (buffer-substring-no-properties (point-min) (point-max))))
-      (when (sage-called-interactively-p 'interactive)
-	(message output))
-      output)))
+
+  (if (fboundp 'python-shell-send-string-no-output)
+      (python-shell-send-string-no-output command (python-proc))
+    (with-temp-buffer
+      ;; Grab what Python has to say
+      (comint-redirect-send-command-to-process
+       command (current-buffer) (python-proc) nil t)
+      ;; Wait for the redirection to complete
+      (with-current-buffer (process-buffer (python-proc))
+	(while (null comint-redirect-completed)
+	  (accept-process-output nil 1)))
+      ;; Return the output
+      (let ((output (buffer-substring-no-properties (point-min) (point-max))))
+	(when (sage-called-interactively-p 'interactive)
+	  (message output))
+	output))))
 
 ;;;_* Generally useful tidbits
 
