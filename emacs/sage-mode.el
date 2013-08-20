@@ -220,10 +220,16 @@
 (defun sage-last-prompt ()
   "Return the text of the last prompt seen in this inferior buffer."
   (with-current-buffer sage-buffer
-    (if comint-last-prompt-overlay
-	(buffer-substring-no-properties (overlay-start comint-last-prompt-overlay)
-					(overlay-end comint-last-prompt-overlay))
-      "")))
+    (cond
+     ((and (boundp 'comint-last-prompt-overlay)
+	   comint-last-prompt-overlay)
+      (buffer-substring-no-properties (overlay-start comint-last-prompt-overlay)
+				      (overlay-end comint-last-prompt-overlay)))
+     ((and (boundp 'comint-last-prompt)
+	   comint-last-prompt)
+      (buffer-substring-no-properties (car comint-last-prompt)
+				      (cdr comint-last-prompt)))
+     (t ""))))
 
 (defun sage-last-prompt-is-debugger ()
   "Return t if the last prompt seen in this inferior buffer was a debugger prompt."
