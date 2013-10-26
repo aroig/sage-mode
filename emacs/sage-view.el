@@ -256,25 +256,20 @@ that."
   (let* ((pngname (format "%s/sage-view.png" sage-view-dir-name))
 	 (base (expand-file-name (make-temp-name "sage-view-plot_") sage-view-dir-name))
 	 (pngname2 (concat base ".png")))
-    ;; (message "Looking for plot at %s..." pngname)
     (when (and pngname
 	       (file-exists-p pngname)
 	       (file-readable-p pngname))
-      ;; (message "Looking for plot at %s... not found." pngname)
       ;; the found branch
-      ;; (message "Looking for plot at %s... found!" pngname)
       (dired-rename-file pngname pngname2 t)
-      ;; (message "Renamed %s to %s" pngname pngname2)
-
-      (goto-char (point-max))
+      (goto-char comint-last-input-end)
       (let ((im (create-image pngname2 'png))
 	    (sage-view-inline-plot-overlay
-	     (make-overlay (- (point) 1) (- (point) 0) nil nil nil))) ;; adding a margin screws this up
+	     (make-overlay (- (point) 1) (point) nil nil nil))) ;; adding a margin screws this up
 	(overlay-put sage-view-inline-plot-overlay 'display im)
 	(overlay-put sage-view-inline-plot-overlay 'before-string "\n\n") ;; help alignment as much as possible
 	(overlay-put sage-view-inline-plot-overlay 'after-string "\n\n")  ;; but emacs doesn't handle this right IMHO
 	;; (dired-delete-file pngname2 'always) ;; causes problems with emacs image loading
-      ))))
+	))))
 
 (defun sage-view-output-filter (string)
   "Generate and place overlay images for inline output and inline plots.
@@ -296,7 +291,10 @@ Function to be inserted in `comint-output-filter-functions'."
 WARNING: this communicates with the sage process.  Only use this
 when `sage-view' mode is enabled and sage is running."
   (interactive)
+  ;; older sage
   (sage-send-command "pretty_print_default(True)" nil t)
+  ;; sage 5.12
+  (sage-send-command "import IPython.core.ipapi; IPython.core.ipapi.get().magic('display typeset')" nil t)
   (setq sage-view-inline-output-enabled t)
   (sage-view-update-modeline))
 
@@ -306,7 +304,10 @@ when `sage-view' mode is enabled and sage is running."
 WARNING: this communicates with the sage process.  Only use this
 when `sage-view' mode is enabled and sage is running."
   (interactive)
+  ;; older sage
   (sage-send-command "pretty_print_default(False)" nil t)
+  ;; sage 5.12
+  (sage-send-command "import IPython.core.ipapi; IPython.core.ipapi.get().magic('display')" nil t)
   (setq sage-view-inline-output-enabled nil)
   (sage-view-update-modeline))
 

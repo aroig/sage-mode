@@ -87,7 +87,8 @@ Additional arguments are added when the command is used by `run-sage' et al."
   :group 'sage
   :type 'boolean)
 
-(defcustom sage-startup-before-prompt-command "%colors NoColor"
+(defcustom sage-startup-before-prompt-command
+  "import IPython.core.ipapi; IPython.core.ipapi.get().magic('colors NoColor')"
   "*Send this command to the sage slave each time it is executed by `run-sage', BEFORE the first prompt is seen."
   :group 'sage
   :type 'string)
