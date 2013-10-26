@@ -1341,7 +1341,8 @@ Interactively, prompt for SYMBOL."
     (with-current-buffer (help-buffer)
       (ipython-describe-symbol-markup-buffer symbol)
       ;; make it easy to send doctests from a help buffer, for example
-      (run-hooks 'sage-after-help-hook))))
+      (run-hooks 'sage-after-help-hook)))
+  t)
 
 ;;;_ + `sage-find-symbol' is `find-function' for Sage.
 
