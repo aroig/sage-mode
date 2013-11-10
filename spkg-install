@@ -20,12 +20,19 @@ fi
 
 # Copy emacs lisp to SAGE_DATA, and print helpful instructions
 cd "$CUR"
-rm -rf $SAGE_DATA/emacs
-cp -r emacs $SAGE_DATA/emacs
+if [ "x$SAGE_DATA" = x ]; then
+    INSTALL_DIR=$SAGE_LOCAL/share/emacs/site-lisp/sage-mode
+    # Create intermediate directories
+    mkdir -p $INSTALL_DIR
+else
+    INSTALL_DIR=$SAGE_DATA/emacs
+fi
+rm -rf $INSTALL_DIR
+cp -r emacs $INSTALL_DIR
 
 # Remove old elc files if any.
 # Then, even if byte compiling fails, they won't taint the setup.
-rm -f $SAGE_DATA/emacs/*.elc
+rm -f $INSTALL_DIR/*.elc
 
 # Byte compile -- this can fail since we don't require emacs for Sage
 EMACS=${EMACS-emacs}
@@ -39,9 +46,10 @@ else
 
     echo Byte compiling sage-mode with "'$EMACS'"
     echo Set the EMACS environment variable to compile with a different emacs.
-    $EMACS -batch -L $SAGE_DATA/emacs/ -f batch-byte-compile $SAGE_DATA/emacs/*.el
+    $EMACS -batch -L $INSTALL_DIR/ -f batch-byte-compile $INSTALL_DIR/*.el
 
-    # Trick the shell into expanding $SAGE_DATA and $SAGE_ROOT
+    # Trick the shell into expanding $INSTALL_DIR and $SAGE_ROOT
+    export INSTALL_DIR
     sh -c "cat <<EOF
 $(perl -ne 'print if (/Start .emacs/../End .emacs/)' SPKG.txt)
 EOF"
