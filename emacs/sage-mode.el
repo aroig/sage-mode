@@ -836,10 +836,9 @@ the region \"2\" does not print \"2\"."
 (defun sage-attach-this-file ()
   "Attach this file to the current Sage process."
   (interactive)
-
   (sage-maybe-quit-debugger)
   (if buffer-file-name
-      (sage-send-command (format "attach(r'''%s''')" buffer-file-name) nil)
+      (sage-send-command (format "attach(r'''%s''')" buffer-file-name) t)
     (error "This buffer is not associated with a file.  Please save it first")))
 
 ;;;_* Integrate Sage mode with Emacs
