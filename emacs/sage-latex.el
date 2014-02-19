@@ -77,7 +77,7 @@ Adds entries `TeX-expand-list' and `TeX-command-list' and advises
 
 ;;;###autoload
 (defun sage-org-latex-setup ()
-  "Sets up `org-mode' variables to support using SageTeX.
+  "Set up `org-mode' variables to support using SageTeX.
 Currently only `org-latex-to-pdf-process' is affected."
 
   (let ((is-default (equal org-latex-to-pdf-process

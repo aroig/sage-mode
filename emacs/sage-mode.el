@@ -1,4 +1,4 @@
-;;;_* sage-mode.el --- Major mode for editing Sage code
+;;; sage-mode.el --- Major mode for editing Sage code
 
 ;; Copyright (C) 2007, 2008  Nick Alexander
 
@@ -201,9 +201,9 @@
       (sage-send-command "" t)
       (while (progn
 	       (if (not (eq (process-status sprocess) 'run))
-		   (error "Sage process has died unexpectedly.")
+		   (error "Sage process has died unexpectedly")
 		 (if (> (setq timeout (1+ timeout)) inferior-sage-timeout)
-		     (error "Timeout waiting for Sage prompt. Check inferior-sage-timeout."))
+		     (error "Timeout waiting for Sage prompt.  Check inferior-sage-timeout"))
 		 (accept-process-output nil 0 1)
 		 (sit-for 0)
 		 (goto-char (point-max))
@@ -742,7 +742,6 @@ and restart a fresh inferior sage in an existing buffer.
 
 (defun sage-quit-debugger ()
   "Quit debugger if looking at a debugger prompt."
-
   (when (sage-last-prompt-is-debugger)
     (with-current-buffer sage-buffer
       (comint-kill-input)
@@ -837,10 +836,11 @@ the region \"2\" does not print \"2\"."
 (defun sage-attach-this-file ()
   "Attach this file to the current Sage process."
   (interactive)
+
   (sage-maybe-quit-debugger)
   (if buffer-file-name
       (sage-send-command (format "attach(r'''%s''')" buffer-file-name) nil)
-    (error "This buffer is not associated with a file.  Please save it first.")))
+    (error "This buffer is not associated with a file.  Please save it first")))
 
 ;;;_* Integrate Sage mode with Emacs
 

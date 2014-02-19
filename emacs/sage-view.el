@@ -38,8 +38,8 @@
 ;; This mode was inspired by doc-view.el by Tassilo Horn, preview.el
 ;; by David Kastrup, and imath.el by Yasuaki Honda.
 
-;; The LaTex style used by preview.el is mandatory to use
-;; sage-view.el. It is shipped with AUCTeX.
+;; The LaTeX style used by preview.el is mandatory to use
+;; sage-view.el.  It is shipped with AUCTeX.
 
 ;;; Todo:
 ;; - Add a auto-reveal stuff to overlays
@@ -78,8 +78,8 @@
   :group 'sage-view)
 
 (defvar sage-view-start-string "<html><\\(?:span class=\"math\"\\|script type=\"math/tex\"\\)>"
-  "HTML tags that identify the begining of a math formula in Sage
-  output.")
+  "HTML tags that identify the begining of a math formula in Sage output."
+)
 
 (defvar sage-view-final-string "</\\(?:span\\|script\\)></html>"
   "HTML tags that identify the end of a math formula in Sage
