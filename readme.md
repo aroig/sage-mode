@@ -23,17 +23,11 @@ Emacs files: these are usually located in
 
       $SAGE_ROOT/local/share/emacs
 
-Furthermore, if you would like typesetting of Sage results, consider also the following lines:
+Furthermore, if you would like typesetting of Sage results, consider
+customizing `sage-view-default-commands` and adding the following
+lines to your .emacs (after requiring sage):
 
-    ;; If you want sage-view to typeset all your output and have plot()
-    ;; commands inline, uncomment the following line and configure sage-view:
-    (require 'sage-view "sage-view")
     (add-hook 'sage-startup-after-prompt-hook 'sage-view)
-    ;; You can use commands like
-    ;; (add-hook 'sage-startup-after-prompt-hook 'sage-view-disable-inline-output)
-    ;; (add-hook 'sage-startup-after-prompt-hook 'sage-view-disable-inline-plots)
-    ;; to enable some combination of features.  Using sage-view requires a
-    ;; working LaTeX installation with the preview package.
 
 Also consider running `(customize-group 'sage)` in Emacs to see more options.
 
