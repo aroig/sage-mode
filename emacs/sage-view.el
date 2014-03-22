@@ -77,13 +77,26 @@
   :type 'string
   :group 'sage-view)
 
+(defcustom sage-view-default-commands t
+  "Determine what to enable when `sage-view' is started.
+If equal to the symbol `plots' then will start inline plotting.
+If equal to the symbol `output' then will start typesetting output.
+Otherwise, if non-nil will start both.
+
+Each of these can be enabled or disabled later by calling
+`sage-view-enable-inline-plots', `sage-view-disable-inline-plots',
+`sage-view-enable-inline-output', or `sage-view-disable-inline-output'."
+  :type '(choice (const :tag "Inline Plots" plots)
+		 (const :tag "Typeset Output" output)
+		 (const :tag "Both" t))
+  :group 'sage-view)
+
 (defvar sage-view-start-string "<html><\\(?:span class=\"math\"\\|script type=\"math/tex\"\\)>"
   "HTML tags that identify the begining of a math formula in Sage output."
 )
 
 (defvar sage-view-final-string "</\\(?:span\\|script\\)></html>"
-  "HTML tags that identify the end of a math formula in Sage
-  output.")
+  "HTML tags that identify the end of a math formula in Sage output.")
 
 (defvar sage-view-dir-name nil)
 (defvar sage-view-inline-plots-enabled nil)
@@ -489,8 +502,14 @@ PDF to PNG conversions." nil
       (progn
 	(make-local-variable 'sage-view-dir-name)
 	(sage-view-create-temp)
-	(sage-view-enable-inline-output)
-	(sage-view-enable-inline-plots)
+	(cond
+	 ((eq sage-view-default-commands 'plots)
+	  (sage-view-enable-inline-plots))
+	 ((eq sage-view-default-commands 'output)
+	  (sage-view-enable-inline-output))
+	 (sage-view-default-commands
+	  (sage-view-enable-inline-plots)
+	  (sage-view-enable-inline-output)))
 	(make-local-variable 'comint-output-filter-functions)
 	(add-hook 'comint-output-filter-functions 'sage-view-output-filter)
 	(add-hook 'kill-buffer-hook 'sage-view-delete-temp))
