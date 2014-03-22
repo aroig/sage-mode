@@ -219,7 +219,12 @@ image."
     (with-temp-file file
       (insert sage-view-latex-head)
       (insert (overlay-get ov 'math))
-      (insert sage-view-latex-tail))
+      (insert sage-view-latex-tail)
+      ;; The LaTeX created by Sage for MathJax (in some cases) isn't valid.
+      ;; This is our attempt to work around it.
+      (goto-char (point-min))
+      (while (search-forward-regexp "\\verb!\\([^!]*\\)!"  nil t)
+	(replace-match "\mathtt{\\1}")))
     (overlay-put ov 'file-sans-extension base)
     (sage-view-latex->pdf ov)))
 
