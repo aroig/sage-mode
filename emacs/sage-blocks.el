@@ -16,7 +16,6 @@
 ;; A block is defined by a line beginning with `sage-block-delimiter'.
 
 ;;; Code:
-
 (defcustom sage-block-delimiter "###"
   "Any line matching the regular expression `sage-block-delimiter' at the
   beginning of the line is considered a start of a block.
@@ -25,6 +24,12 @@ Note that '^' to match at the beginning of the line should not be added to
 `sage-block-delimiter'.
 Strange behaviour might arise if `sage-block-delimiter' matches multiple lines
 at a time."
+  :type 'string
+  :group 'sage)
+
+(defcustom sage-block-title-decorate " ---- "
+  "When printing titles of blocks, put this decoration around the
+title for easy recognition"
   :type 'string
   :group 'sage)
 
@@ -55,8 +60,25 @@ at a time."
   (let ((backdelim (progn
 		     (unless (looking-at (concat "^" sage-block-delimiter))
 		      (sage-backward-block))
-		     (point))))
-    (sage-send-region backdelim (progn (sage-forward-block)  (point)))))
+		     (point)))
+	(enddelim (progn (sage-forward-block)  (point)))
+	(this-buf (current-buffer))
+	)
+    ;; Copy the region to a temp buffer.
+    ;; Possibly change the first line if it contains a title
+    (with-temp-buffer
+      (insert-buffer-substring this-buf backdelim enddelim)
+      (goto-char (point-min))
+      (when (looking-at sage-block-delimiter)
+	(progn
+	  (goto-char (match-end 0))
+	  (setq title (buffer-substring (point)
+					(progn (end-of-line) (point))))
+	  (when (string-match "^ *\\([^ ].*[^ ]\\) *$" title)
+	    (setq title (match-string 1 title)))
+	  (unless (equal title "")
+	    (insert (concat "\nprint(\"" sage-block-title-decorate title sage-block-title-decorate "\")")))))
+      (sage-send-region (point-min) (point-max)))))
 
 (define-key sage-mode-map (kbd "C-<return>") 'sage-send-current-block)
 (define-key sage-mode-map (kbd "M-{")        'sage-backward-block)
