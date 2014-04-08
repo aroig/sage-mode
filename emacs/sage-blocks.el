@@ -34,29 +34,33 @@ at a time."
 (defun sage-backward-block ()
   "Move backwards to the last beginning of a block."
   (interactive)
-  (search-backward-regexp (concat "^" sage-block-delimiter) nil 0))
+  (unless (search-backward-regexp (concat "^" sage-block-delimiter) nil t)
+    (goto-char (point-min))))
 
 (defun sage-forward-block ()
   "Move forwards to the next beginning of a block."
   (interactive)
-  ; If point is on a delimiter, we should skip this, so search from beginning of
-  ; next line (this will match immediately, if next line is a delimiter)
-  (forward-line)
-  ; search forward: if it worked, move to begin of delimiter, otherwise end of file
-  (when (search-forward-regexp (concat "^" sage-block-delimiter) nil 0)
-      (goto-char (match-beginning 0))))
+  ;; If point is on a delimiter, we should skip this, so search from beginning of
+  ;; next line (this will match immediately, if next line is a delimiter)
+  (let ((re  (concat "^" sage-block-delimiter)))
+    (when (looking-at re)
+      (forward-line))
+    ;; search forward: if it worked, move to begin of delimiter, otherwise end of file
+    (if (search-forward-regexp re nil t)
+	(goto-char (match-beginning 0))
+      (goto-char (point-max)))))
 
 (defun sage-send-current-block ()
-  "Send the block that the point is currently in to the inferior shell."
+  "Send the block that the point is currently in to the inferior shell.
+Move to end of block sent."
   (interactive)
   ;; Border-case: if we're standing on a delimiter, sage-backward-block will go
   ;; to previous delimiter, but we should send from this delimiter and forwards.
-  (beginning-of-line)
-  (let ((backdelim (progn
-		     (unless (looking-at (concat "^" sage-block-delimiter))
-		      (sage-backward-block))
-		     (point))))
-    (sage-send-region backdelim (progn (sage-forward-block)  (point)))))
+  (sage-forward-block)
+  (let ((p (point)))
+    (sage-backward-block)
+    (sage-send-region (point) p)
+    (goto-char p)))
 
 
 (defun sage-blocks-default-keybindings ()
