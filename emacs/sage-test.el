@@ -188,7 +188,7 @@ Expects that point is on the same line as a sage: prompt."
       (when need-newline
 	;; extra newline to clear indentation or single line function/if/try definition
 	(unless one-liner
-	  (sage-send-command "\n" nil))
+	  (sage-send-command "\n" t))
 	(sage-send-command "\n" t)))))
 
 (defun sage-fix-doctest-at-point ()
