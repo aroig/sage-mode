@@ -31,24 +31,34 @@ at a time."
 ;;
 ;; Functionality for Sage source files
 ;;
-(defun sage-backward-block ()
+(defun sage-backward-block (arg)
   "Move backwards to the last beginning of a block."
-  (interactive)
-  (unless (search-backward-regexp (concat "^" sage-block-delimiter) nil t)
-    (goto-char (point-min))))
+  (interactive "p")
+  (if (< arg 0)
+      (sage-forward-block (- arg))
+    (while (and (> arg 0)
+		(search-backward-regexp (concat "^" sage-block-delimiter) nil t))
+      (setq arg (- arg 1)))
+    (when (> arg 0)
+      (goto-char (point-min)))))
 
-(defun sage-forward-block ()
+(defun sage-forward-block (arg)
   "Move forwards to the next beginning of a block."
-  (interactive)
-  ;; If point is on a delimiter, we should skip this, so search from beginning of
-  ;; next line (this will match immediately, if next line is a delimiter)
-  (let ((re  (concat "^" sage-block-delimiter)))
-    (when (looking-at re)
-      (forward-line))
-    ;; search forward: if it worked, move to begin of delimiter, otherwise end of file
-    (if (search-forward-regexp re nil t)
-	(goto-char (match-beginning 0))
-      (goto-char (point-max)))))
+  (interactive "p")
+  (if (< arg 0)
+      (sage-backward-block (- arg))
+    ;; If point is on a delimiter, we should skip this, so search from beginning of
+    ;; next line (this will match immediately, if next line is a delimiter)
+    (let ((re  (concat "^" sage-block-delimiter)))
+      (when (looking-at re)
+	(forward-line))
+      ;; search forward: if it worked, move to begin of delimiter, otherwise end of file
+      (while (and (> arg 0)
+		  (search-forward-regexp re nil t))
+	(setq arg (- arg 1)))
+      (if (> arg 0)
+	  (goto-char (point-max))
+	(goto-char (match-beginning 0))))))
 
 (defun sage-send-current-block ()
   "Send the block that the point is currently in to the inferior shell.
@@ -56,9 +66,9 @@ Move to end of block sent."
   (interactive)
   ;; Border-case: if we're standing on a delimiter, sage-backward-block will go
   ;; to previous delimiter, but we should send from this delimiter and forwards.
-  (sage-forward-block)
+  (sage-forward-block 1)
   (let ((p (point)))
-    (sage-backward-block)
+    (sage-backward-block 1)
     (sage-send-region (point) p)
     (goto-char p)))
 
