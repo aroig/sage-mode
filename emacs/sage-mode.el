@@ -687,7 +687,10 @@ buffer for a list of commands.)"
 (defun sage-current-devel-root ()
   (interactive)
   "Return the current Sage branch directory."
-  (format "%s/src" (sage-root)))
+  (let ((root-6+ (format "%s/src" (sage-root))))
+    (if (file-exists-p root-6+)
+	root-6+
+      (format "%s/devel/sage-%s" (sage-root) (sage-current-branch)))))
 
 ;;;_* Sage major mode for editing Sage library code
 
@@ -867,6 +870,8 @@ the region \"2\" does not print \"2\"."
 ;;; `sage-find-symbol' and friends jump to files.  It's even more annoying when
 ;;; the file is not correctly recognized as sage source!
 
+(add-to-list 'auto-mode-alist '("devel/sage.*?\\.py\\'" . sage-mode))
+(add-to-list 'auto-mode-alist '("devel/sage.*?\\.pyx\\'" . pyrex-mode))
 (add-to-list 'auto-mode-alist '("src/sage.*?\\.py\\'" . sage-mode))
 (add-to-list 'auto-mode-alist '("src/sage.*?\\.pyx\\'" . pyrex-mode))
 
@@ -893,8 +898,15 @@ Match group 1 will be replaced with src")
   (save-match-data
     (let* ((match (string-match sage-site-packages-regexp filename)))
       (if (and filename match)
-	  ;; handle current branch somewhat intelligiently
-	  (concat (substring filename 0 (match-beginning 1)) "src" (substring filename (match-end 1)))
+	  (let ((file-6+ (concat (substring filename 0 (match-beginning 1))
+				 "src"
+				 (substring filename (match-end 1)))))
+	    (if (file-exists-p file-6+)
+		file-6+
+	      ;; handle current branch somewhat intelligiently
+	      (let* ((base (concat (substring filename 0 (match-beginning 1)) "devel/"))
+		     (branch (or (file-symlink-p (concat base "sage")) "sage")))
+		(concat base branch (substring filename (match-end 1))))))
 	filename))))
 
 (defun sage-jump-to-development-version ()
