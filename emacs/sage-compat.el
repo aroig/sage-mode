@@ -1,4 +1,4 @@
-;;;_* sage-compat.el --- Compatibility with new python.el
+;;; sage-compat.el --- Compatibility with new python.el
 
 ;; Hack around new python.el.  Eventually all of this should go away,
 ;; but for now it's the easiest way to get things working.

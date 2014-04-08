@@ -36,54 +36,79 @@ title for easy recognition"
 ;;
 ;; Functionality for Sage source files
 ;;
-(defun sage-backward-block ()
+(defun sage-backward-block (arg)
   "Move backwards to the last beginning of a block."
-  (interactive)
-  (search-backward-regexp (concat "^" sage-block-delimiter) nil 0))
+  (interactive "p")
+  (if (< arg 0)
+      (sage-forward-block (- arg))
+    (while (and (> arg 0)
+		(search-backward-regexp (concat "^" sage-block-delimiter) nil t))
+      (setq arg (- arg 1)))
+    (when (> arg 0)
+      (goto-char (point-min)))))
 
-(defun sage-forward-block ()
+(defun sage-forward-block (arg)
   "Move forwards to the next beginning of a block."
-  (interactive)
-  ; If point is on a delimiter, we should skip this, so search from beginning of
-  ; next line (this will match immediately, if next line is a delimiter)
-  (forward-line)
-  ; search forward: if it worked, move to begin of delimiter, otherwise end of file
-  (when (search-forward-regexp (concat "^" sage-block-delimiter) nil 0)
-      (goto-char (match-beginning 0))))
+  (interactive "p")
+  (if (< arg 0)
+      (sage-backward-block (- arg))
+    ;; If point is on a delimiter, we should skip this, so search from beginning of
+    ;; next line (this will match immediately, if next line is a delimiter)
+    (let ((re  (concat "^" sage-block-delimiter)))
+      (when (looking-at re)
+	(forward-line))
+      ;; search forward: if it worked, move to begin of delimiter, otherwise end of file
+      (while (and (> arg 0)
+		  (search-forward-regexp re nil t))
+	(setq arg (- arg 1)))
+      (if (> arg 0)
+	  (goto-char (point-max))
+	(goto-char (match-beginning 0))))))
 
 (defun sage-send-current-block ()
-  "Send the block that the point is currently in to the inferior shell."
+  "Send the block that the point is currently in to the inferior shell.
+Move to end of block sent."
   (interactive)
   ;; Border-case: if we're standing on a delimiter, sage-backward-block will go
   ;; to previous delimiter, but we should send from this delimiter and forwards.
-  (beginning-of-line)
-  (let ((backdelim (progn
-		     (unless (looking-at (concat "^" sage-block-delimiter))
-		      (sage-backward-block))
-		     (point)))
-	(enddelim (progn (sage-forward-block)  (point)))
-	(this-buf (current-buffer))
-	)
-    ;; Copy the region to a temp buffer.
-    ;; Possibly change the first line if it contains a title
-    (with-temp-buffer
-      (insert-buffer-substring this-buf backdelim enddelim)
-      (goto-char (point-min))
-      (when (looking-at sage-block-delimiter)
-	(progn
-	  (goto-char (match-end 0))
-	  (setq title (buffer-substring (point)
-					(progn (end-of-line) (point))))
-	  (when (string-match "^ *\\([^ ].*[^ ]\\) *$" title)
-	    (setq title (match-string 1 title)))
-	  (unless (equal title "")
-	    (insert (concat "\nprint(\"" sage-block-title-decorate title sage-block-title-decorate "\")")))))
-      (sage-send-region (point-min) (point-max)))))
+  (sage-forward-block 1)
+  (let ((enddelim (point)))
+    (save-excursion
+      (sage-backward-block 1)
+      (setq backdelim (point)))
+    (let ((this-buf (current-buffer)))
+      ;; Copy the region to a temp buffer.
+      ;; Possibly change the first line if it contains a title
+      (with-temp-buffer
+	(insert-buffer-substring this-buf backdelim enddelim)
+	(goto-char (point-min))
+	(when (looking-at sage-block-delimiter)
+	  (progn
+	    (goto-char (match-end 0))
+	    (setq title (buffer-substring (point)
+					  (progn (end-of-line) (point))))
+	    (when (string-match "^ *\\([^ ].*[^ ]\\) *$" title)
+	      (setq title (match-string 1 title)))
+	    (unless (equal title "")
+	      (insert (concat "\nprint(\"" sage-block-title-decorate title sage-block-title-decorate "\")")))))
+	(sage-send-region (point-min) (point-max)))))
+    )
 
-(define-key sage-mode-map (kbd "C-<return>") 'sage-send-current-block)
-(define-key sage-mode-map (kbd "M-{")        'sage-backward-block)
-(define-key sage-mode-map (kbd "M-}")        'sage-forward-block)
+(defun sage-blocks-default-keybindings ()
+  "Bind default keys for working with sage blocks.
 
+These are
+  C-M-{      `sage-backward-block'
+  C-M-}      `sage-forward-block'
+  C-<return> `sage-send-current-block'
+
+in `sage-mode' and in `inferior-sage-mode-map':
+
+  C-<return> `sage-pull-next-block'"
+  (define-key sage-mode-map (kbd "C-<return>") 'sage-send-current-block)
+  (define-key sage-mode-map (kbd "C-M-{")        'sage-backward-block)
+  (define-key sage-mode-map (kbd "C-M-}")        'sage-forward-block)
+  (define-key inferior-sage-mode-map (kbd "C-<return>") 'sage-pull-next-block))
 
 ;;
 ;; Functionality for the inferior shell
@@ -92,22 +117,18 @@ title for easy recognition"
   "Evaluate the next block of the last visited file in Sage mode."
   (interactive)
   ;; Find the first buffer in buffer-list which is in sage-mode
-  (let ((buf
-	 (progn
-	   (setq lst (buffer-list))
-	   (catch 'break
-	     (while lst
-	       (if (with-current-buffer (car lst) (derived-mode-p 'sage-mode))
-		   (throw 'break (car lst))
-		 (setq lst (cdr lst))))))
-	 ))
+  (let* ((lst (buffer-list))
+	 (buf
+	  (catch 'break
+	    (while lst
+	      (if (with-current-buffer (car lst) (derived-mode-p 'sage-mode))
+		  (throw 'break (car lst))
+		(setq lst (cdr lst)))))))
     (if buf
 	(progn
 	  (switch-to-buffer-other-window buf)
 	  (sage-send-current-block))
       (error "No sage-mode buffer found"))))
-
-(define-key inferior-sage-mode-map (kbd "C-<return>") 'sage-pull-next-block)
 
 (provide 'sage-blocks)
 

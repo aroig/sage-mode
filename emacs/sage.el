@@ -1,4 +1,4 @@
-;;;_* sage.el --- Major modes for editing sage code, interacting with inferior
+;;; sage.el --- Major modes for editing sage code, interacting with inferior
 ;;;sage processes, building sage, and doctesting sage
 
 ;; Copyright (C) 2007, 2008  Nick Alexander
@@ -52,7 +52,7 @@
 
 (eval-when-compile (require 'cl))
 (defun sage-guess-command ()
-  "Tries to guess what value to use for `sage-command'.
+  "Try to guess what value to use for `sage-command'.
 It uses sage in PATH if it can find it, otherwise on OS X it
 attempts to find and use Sage.app.  It falls back to ~/bin/sage."
   (car (split-string
@@ -251,3 +251,5 @@ version of `sage-mode'!"
 (load "sage-load" t)
 
 (provide 'sage)
+
+;;; sage.el ends here

@@ -1,4 +1,4 @@
-;;;_* sage-mode.el --- Major mode for editing Sage code
+;;; sage-mode.el --- Major mode for editing Sage code
 
 ;; Copyright (C) 2007, 2008  Nick Alexander
 
@@ -201,9 +201,9 @@
       (sage-send-command "" t)
       (while (progn
 	       (if (not (eq (process-status sprocess) 'run))
-		   (error "Sage process has died unexpectedly.")
+		   (error "Sage process has died unexpectedly")
 		 (if (> (setq timeout (1+ timeout)) inferior-sage-timeout)
-		     (error "Timeout waiting for Sage prompt. Check inferior-sage-timeout."))
+		     (error "Timeout waiting for Sage prompt.  Check inferior-sage-timeout"))
 		 (accept-process-output nil 0 1)
 		 (sit-for 0)
 		 (goto-char (point-max))
@@ -667,7 +667,7 @@ buffer for a list of commands.)"
     (nth 0 lst))))
 
 (defun sage-current-branch-link ()
-  "Return the current Sage branch link, i.e., the target of devel/sage."
+  "Return the current Sage branch link, i.e., the target of devel/sage. Meaningless with Sage 6.0."
   (interactive)
   (save-match-data
     (let ((lst (split-string (shell-command-to-string (concat sage-command " -branch")))))
@@ -676,7 +676,7 @@ buffer for a list of commands.)"
 	"main"))))
 
 (defun sage-current-branch ()
-  "Return the current Sage branch name."
+  "Return the current Sage branch name. Meaningless with Sage 6.0."
   (interactive)
   (save-match-data
     (if (and (inferior-sage-mode-p)
@@ -687,7 +687,10 @@ buffer for a list of commands.)"
 (defun sage-current-devel-root ()
   (interactive)
   "Return the current Sage branch directory."
-  (format "%s/devel/sage-%s" (sage-root) (sage-current-branch)))
+  (let ((root-6+ (format "%s/src" (sage-root))))
+    (if (file-exists-p root-6+)
+	root-6+
+      (format "%s/devel/sage-%s" (sage-root) (sage-current-branch)))))
 
 ;;;_* Sage major mode for editing Sage library code
 
@@ -742,7 +745,6 @@ and restart a fresh inferior sage in an existing buffer.
 
 (defun sage-quit-debugger ()
   "Quit debugger if looking at a debugger prompt."
-
   (when (sage-last-prompt-is-debugger)
     (with-current-buffer sage-buffer
       (comint-kill-input)
@@ -839,8 +841,8 @@ the region \"2\" does not print \"2\"."
   (interactive)
   (sage-maybe-quit-debugger)
   (if buffer-file-name
-      (sage-send-command (format "attach(r'''%s''')" buffer-file-name) nil)
-    (error "This buffer is not associated with a file.  Please save it first.")))
+      (sage-send-command (format "attach(r'''%s''')" buffer-file-name) t)
+    (error "This buffer is not associated with a file.  Please save it first")))
 
 ;;;_* Integrate Sage mode with Emacs
 
@@ -862,7 +864,7 @@ the region \"2\" does not print \"2\"."
 ;;     (add-to-list 'grep-files-aliases '("py" . "{*.py,*.pyx}"))
 ;;     (add-to-list 'grep-files-aliases '("pyx" . "{*.py,*.pyx}"))))
 
-;;;_ + Make devel/sage files play nicely, and don't jump into site-packages if possible
+;;;_ + Make src/sage files play nicely, and don't jump into site-packages if possible
 
 ;;; It's annoying to get lost in sage/.../site-packages version of files when
 ;;; `sage-find-symbol' and friends jump to files.  It's even more annoying when
@@ -870,11 +872,13 @@ the region \"2\" does not print \"2\"."
 
 (add-to-list 'auto-mode-alist '("devel/sage.*?\\.py\\'" . sage-mode))
 (add-to-list 'auto-mode-alist '("devel/sage.*?\\.pyx\\'" . pyrex-mode))
+(add-to-list 'auto-mode-alist '("src/sage.*?\\.py\\'" . sage-mode))
+(add-to-list 'auto-mode-alist '("src/sage.*?\\.pyx\\'" . pyrex-mode))
 
 (defvar sage-site-packages-regexp "\\(local/lib/python[0-9.]*/site-packages.*?\\)/sage"
   "Regexp to match sage site-packages files.
 
-Match group 1 will be replaced with devel/sage-branch")
+Match group 1 will be replaced with src")
 
 (add-hook 'find-file-hook 'sage-warn-if-site-packages-file)
 (defun sage-warn-if-site-packages-file()
@@ -894,10 +898,15 @@ Match group 1 will be replaced with devel/sage-branch")
   (save-match-data
     (let* ((match (string-match sage-site-packages-regexp filename)))
       (if (and filename match)
-	  ;; handle current branch somewhat intelligiently
-	  (let* ((base (concat (substring filename 0 (match-beginning 1)) "devel/"))
-		 (branch (or (file-symlink-p (concat base "sage")) "sage")))
-	    (concat base branch (substring filename (match-end 1))))
+	  (let ((file-6+ (concat (substring filename 0 (match-beginning 1))
+				 "src"
+				 (substring filename (match-end 1)))))
+	    (if (file-exists-p file-6+)
+		file-6+
+	      ;; handle current branch somewhat intelligiently
+	      (let* ((base (concat (substring filename 0 (match-beginning 1)) "devel/"))
+		     (branch (or (file-symlink-p (concat base "sage")) "sage")))
+		(concat base branch (substring filename (match-end 1))))))
 	filename))))
 
 (defun sage-jump-to-development-version ()
@@ -920,7 +929,8 @@ Match group 1 will be replaced with devel/sage-branch")
 (defadvice hg-root
   (before eshell-hg-root (&optional path))
   "Use current directory in eshell-mode for hg-root if possible.
-Use current devel directory in inferior-sage-mode for hg-root if possible."
+Use current devel directory in inferior-sage-mode for hg-root if possible.
+Meaningless with Sage 6.0."
   (when (derived-mode-p 'eshell-mode)	; buffer local in eshell buffers
     (ad-set-arg 0 default-directory))
   (when (inferior-sage-mode-p) ; buffer local in inferior sage buffers

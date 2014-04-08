@@ -38,8 +38,8 @@
 ;; This mode was inspired by doc-view.el by Tassilo Horn, preview.el
 ;; by David Kastrup, and imath.el by Yasuaki Honda.
 
-;; The LaTex style used by preview.el is mandatory to use
-;; sage-view.el. It is shipped with AUCTeX.
+;; The LaTeX style used by preview.el is mandatory to use
+;; sage-view.el.  It is shipped with AUCTeX.
 
 ;;; Todo:
 ;; - Add a auto-reveal stuff to overlays
@@ -77,13 +77,26 @@
   :type 'string
   :group 'sage-view)
 
+(defcustom sage-view-default-commands t
+  "Determine what to enable when `sage-view' is started.
+If equal to the symbol `plots' then will start inline plotting.
+If equal to the symbol `output' then will start typesetting output.
+Otherwise, if non-nil will start both.
+
+Each of these can be enabled or disabled later by calling
+`sage-view-enable-inline-plots', `sage-view-disable-inline-plots',
+`sage-view-enable-inline-output', or `sage-view-disable-inline-output'."
+  :type '(choice (const :tag "Inline Plots" plots)
+		 (const :tag "Typeset Output" output)
+		 (const :tag "Both" t))
+  :group 'sage-view)
+
 (defvar sage-view-start-string "<html><\\(?:span class=\"math\"\\|script type=\"math/tex\"\\)>"
-  "HTML tags that identify the begining of a math formula in Sage
-  output.")
+  "HTML tags that identify the begining of a math formula in Sage output."
+)
 
 (defvar sage-view-final-string "</\\(?:span\\|script\\)></html>"
-  "HTML tags that identify the end of a math formula in Sage
-  output.")
+  "HTML tags that identify the end of a math formula in Sage output.")
 
 (defvar sage-view-dir-name nil)
 (defvar sage-view-inline-plots-enabled nil)
@@ -206,7 +219,12 @@ image."
     (with-temp-file file
       (insert sage-view-latex-head)
       (insert (overlay-get ov 'math))
-      (insert sage-view-latex-tail))
+      (insert sage-view-latex-tail)
+      ;; The LaTeX created by Sage for MathJax (in some cases) isn't valid.
+      ;; This is our attempt to work around it.
+      (goto-char (point-min))
+      (while (search-forward-regexp "\\verb!\\([^!]*\\)!"  nil t)
+	(replace-match "\mathtt{\\1}")))
     (overlay-put ov 'file-sans-extension base)
     (sage-view-latex->pdf ov)))
 
@@ -292,9 +310,11 @@ WARNING: this communicates with the sage process.  Only use this
 when `sage-view' mode is enabled and sage is running."
   (interactive)
   ;; older sage
-  (sage-send-command "pretty_print_default(True)" nil t)
+  (sage-send-command "if hasattr(sys.displayhook, 'set_display'): pretty_print_default(True)" nil t)
   ;; sage 5.12
   (sage-send-command "import IPython.core.ipapi; IPython.core.ipapi.get().magic('display typeset')" nil t)
+  ;; Sage 6.2
+  (sage-send-command "get_ipython().magic('display typeset')" nil t)
   (setq sage-view-inline-output-enabled t)
   (sage-view-update-modeline))
 
@@ -305,9 +325,11 @@ WARNING: this communicates with the sage process.  Only use this
 when `sage-view' mode is enabled and sage is running."
   (interactive)
   ;; older sage
-  (sage-send-command "pretty_print_default(False)" nil t)
+  (sage-send-command "if hasattr(sys.displayhook, 'set_display'): pretty_print_default(False)" nil t)
   ;; sage 5.12
   (sage-send-command "import IPython.core.ipapi; IPython.core.ipapi.get().magic('display')" nil t)
+  ;; Sage 6.2
+  (sage-send-command "get_ipython().magic('display simple')" nil t)
   (setq sage-view-inline-output-enabled nil)
   (sage-view-update-modeline))
 
@@ -489,8 +511,14 @@ PDF to PNG conversions." nil
       (progn
 	(make-local-variable 'sage-view-dir-name)
 	(sage-view-create-temp)
-	(sage-view-enable-inline-output)
-	(sage-view-enable-inline-plots)
+	(cond
+	 ((eq sage-view-default-commands 'plots)
+	  (sage-view-enable-inline-plots))
+	 ((eq sage-view-default-commands 'output)
+	  (sage-view-enable-inline-output))
+	 (sage-view-default-commands
+	  (sage-view-enable-inline-plots)
+	  (sage-view-enable-inline-output)))
 	(make-local-variable 'comint-output-filter-functions)
 	(add-hook 'comint-output-filter-functions 'sage-view-output-filter)
 	(add-hook 'kill-buffer-hook 'sage-view-delete-temp))

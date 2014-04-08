@@ -5,10 +5,16 @@
 ;; Author: Nicholas Alexander <ncalexan@pv109055.reshsg.uci.edu>
 ;; Keywords: sage build
 
+
+;;; Commentary:
+;;
+
 (require 'compile)
 (require 'sage-mode)
 
 ;; History of sage-build commands.
+;;; Code:
+
 ;;;###autoload
 (defvar sage-build-history nil)
 
@@ -179,3 +185,5 @@ easily repeat a sage-build command."
   (compilation-start command-args 'sage-build-mode))
 
 (provide 'sage-build)
+
+;;; sage-build.el ends here

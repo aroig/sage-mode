@@ -22,18 +22,12 @@ paths on you machine. `$INSTALL_DIR` refers to the directory of the sage-mode
 Emacs files: these are usually located in
 
       $SAGE_ROOT/local/share/emacs
-   
-Furthermore, if you would like typesetting of Sage results, consider also the following lines:
 
-    ;; If you want sage-view to typeset all your output and have plot()
-    ;; commands inline, uncomment the following line and configure sage-view:
-    (require 'sage-view "sage-view")
+Furthermore, if you would like typesetting of Sage results, consider
+customizing `sage-view-default-commands` and adding the following
+lines to your .emacs (after requiring sage):
+
     (add-hook 'sage-startup-after-prompt-hook 'sage-view)
-    ;; You can use commands like
-    ;; (add-hook 'sage-startup-after-prompt-hook 'sage-view-disable-inline-output)
-    ;; (add-hook 'sage-startup-after-prompt-hook 'sage-view-disable-inline-plots)
-    ;; to enable some combination of features.  Using sage-view requires a
-    ;; working LaTeX installation with the preview package.
 
 Also consider running `(customize-group 'sage)` in Emacs to see more options.
 
@@ -47,29 +41,30 @@ where sage_mode_<version>.spkg refers to the file you have downloaded.
 
 You can then follow the remaining steps of Option 1 to install sage-mode in Emacs.
 
-### Option 3. Download the newest code from the [Bitbucket repository](https://bitbucket.org/gvol/sage-mode) and compile the spkg yourself.
+### Option 3. Download the newest code from the [Bitbucket repository](https://bitbucket.org/gvol/sage-mode).
 
-The most maintainable solution is to clone the Bitbucket repository: first, make
+The most cutting edge solution is to clone the Bitbucket repository: first, make
 sure you have an installation of Mercurial. Then in an appropriate directory, run
 
      hg clone https://bitbucket.org/gvol/sage-mode
 
-In the resulting `sage-mode` folder, you build the newest spkg simply by running
+Then you can either create and install an spkg, or simply point Emacs at the
+directory, by adding something like the following to your .emacs:
+
+    (add-to-list 'load-path "/path/to/sage-mode/emacs/")
+    (require 'sage "sage")
+
+To create an spkg, go to the `sage-mode` folder that you checked out, and run
 
      ./make-spkg.sh $VERSION
 
-where instead of `$VERSION`, you write a version number. If you write an
-existing version number, the corresponding spkg will be built. If you write
-something non-existing, the top of tip of the development branch will be built.
-If the tip does not have a version number, it might be useful for later
-reference to use as `$VERSION$ something which can identify at which point in
-the repository, such as the latest version number followed by a few characters
-of the latest commit.
-TODO: Is this right iandrus?
+where instead of `$VERSION`, you write a version number.  The version "number"
+can be anything.  It might be useful for later reference to use as `$VERSION`
+something which can identify the exaxt version you built, such as the hash of
+the latest commit (found with `hg id -i -r .`).
 
 In any case, this creates a file `sage_mode_<version>.spkg`. You can then follow
-the steps in Option 2 as if you had downloaded this spkg from the repository
-
+the steps in Option 2 as if you had downloaded this spkg from the repository.
 
 
 The inferior sage shell
