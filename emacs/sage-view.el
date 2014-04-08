@@ -310,9 +310,11 @@ WARNING: this communicates with the sage process.  Only use this
 when `sage-view' mode is enabled and sage is running."
   (interactive)
   ;; older sage
-  (sage-send-command "pretty_print_default(True)" nil t)
+  (sage-send-command "if hasattr(sys.displayhook, 'set_display'): pretty_print_default(True)" nil t)
   ;; sage 5.12
   (sage-send-command "import IPython.core.ipapi; IPython.core.ipapi.get().magic('display typeset')" nil t)
+  ;; Sage 6.2
+  (sage-send-command "get_ipython().magic('display typeset')" nil t)
   (setq sage-view-inline-output-enabled t)
   (sage-view-update-modeline))
 
@@ -323,9 +325,11 @@ WARNING: this communicates with the sage process.  Only use this
 when `sage-view' mode is enabled and sage is running."
   (interactive)
   ;; older sage
-  (sage-send-command "pretty_print_default(False)" nil t)
+  (sage-send-command "if hasattr(sys.displayhook, 'set_display'): pretty_print_default(False)" nil t)
   ;; sage 5.12
   (sage-send-command "import IPython.core.ipapi; IPython.core.ipapi.get().magic('display')" nil t)
+  ;; Sage 6.2
+  (sage-send-command "get_ipython().magic('display simple')" nil t)
   (setq sage-view-inline-output-enabled nil)
   (sage-view-update-modeline))
 
