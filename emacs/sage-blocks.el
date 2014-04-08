@@ -82,15 +82,13 @@ in `sage-mode' and in `inferior-sage-mode-map':
   "Evaluate the next block of the last visited file in Sage mode."
   (interactive)
   ;; Find the first buffer in buffer-list which is in sage-mode
-  (let ((buf
-	 (progn
-	   (setq lst (buffer-list))
-	   (catch 'break
-	     (while lst
-	       (if (with-current-buffer (car lst) (derived-mode-p 'sage-mode))
-		   (throw 'break (car lst))
-		 (setq lst (cdr lst))))))
-	 ))
+  (let* ((lst (buffer-list))
+	 (buf
+	  (catch 'break
+	    (while lst
+	      (if (with-current-buffer (car lst) (derived-mode-p 'sage-mode))
+		  (throw 'break (car lst))
+		(setq lst (cdr lst)))))))
     (if buf
 	(progn
 	  (switch-to-buffer-other-window buf)
