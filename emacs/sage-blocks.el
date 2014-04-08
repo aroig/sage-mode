@@ -58,10 +58,22 @@ at a time."
 		     (point))))
     (sage-send-region backdelim (progn (sage-forward-block)  (point)))))
 
-(define-key sage-mode-map (kbd "C-<return>") 'sage-send-current-block)
-(define-key sage-mode-map (kbd "M-{")        'sage-backward-block)
-(define-key sage-mode-map (kbd "M-}")        'sage-forward-block)
 
+(defun sage-blocks-default-keybindings ()
+  "Bind default keys for working with sage blocks.
+
+These are
+  C-M-{      `sage-backward-block'
+  C-M-}      `sage-forward-block'
+  C-<return> `sage-send-current-block'
+
+in `sage-mode' and in `inferior-sage-mode-map':
+
+  C-<return> `sage-pull-next-block'"
+  (define-key sage-mode-map (kbd "C-<return>") 'sage-send-current-block)
+  (define-key sage-mode-map (kbd "C-M-{")        'sage-backward-block)
+  (define-key sage-mode-map (kbd "C-M-}")        'sage-forward-block)
+  (define-key inferior-sage-mode-map (kbd "C-<return>") 'sage-pull-next-block))
 
 ;;
 ;; Functionality for the inferior shell
@@ -84,8 +96,6 @@ at a time."
 	  (switch-to-buffer-other-window buf)
 	  (sage-send-current-block))
       (error "No sage-mode buffer found"))))
-
-(define-key inferior-sage-mode-map (kbd "C-<return>") 'sage-pull-next-block)
 
 (provide 'sage-blocks)
 
