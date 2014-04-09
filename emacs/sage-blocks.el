@@ -72,27 +72,27 @@ Move to end of block sent."
   ;; Border-case: if we're standing on a delimiter, sage-backward-block will go
   ;; to previous delimiter, but we should send from this delimiter and forwards.
   (sage-forward-block 1)
-  (let ((enddelim (point)))
-    (save-excursion
-      (sage-backward-block 1)
-      (setq backdelim (point)))
-    (let ((this-buf (current-buffer)))
-      ;; Copy the region to a temp buffer.
-      ;; Possibly change the first line if it contains a title
-      (with-temp-buffer
-	(insert-buffer-substring this-buf backdelim enddelim)
-	(goto-char (point-min))
-	(when (looking-at sage-block-delimiter)
-	  (progn
-	    (goto-char (match-end 0))
-	    (setq title (buffer-substring (point)
-					  (progn (end-of-line) (point))))
-	    (when (string-match "^ *\\([^ ].*[^ ]\\) *$" title)
-	      (setq title (match-string 1 title)))
-	    (unless (equal title "")
-	      (insert (concat "\nprint(\"" sage-block-title-decorate title sage-block-title-decorate "\")")))))
-	(sage-send-region (point-min) (point-max)))))
-    )
+  (let* ((this-buf (current-buffer))
+	 (enddelim (point))
+	 (backdelim (save-excursion
+		      (sage-backward-block 1)
+		      (point)))
+	 title)
+    ;; Copy the region to a temp buffer.
+    ;; Possibly change the first line if it contains a title
+    (with-temp-buffer
+      (insert-buffer-substring this-buf backdelim enddelim)
+      (goto-char (point-min))
+      (when (looking-at sage-block-delimiter)
+	(progn
+	  (goto-char (match-end 0))
+	  (setq title (buffer-substring (point)
+					(progn (end-of-line) (point))))
+	  (when (string-match "^ *\\([^ ].*[^ ]\\) *$" title)
+	    (setq title (match-string 1 title)))
+	  (unless (equal title "")
+	    (insert (concat "\nprint(\"" sage-block-title-decorate title sage-block-title-decorate "\")")))))
+      (sage-send-region (point-min) (point-max)))))
 
 (defun sage-blocks-default-keybindings ()
   "Bind default keys for working with sage blocks.
