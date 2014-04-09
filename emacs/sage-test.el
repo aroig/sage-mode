@@ -124,19 +124,16 @@ easily repeat a sage-test command."
 
     ;; (message "prompt-length %s %s" prompt-length extra-newline)
     (goto-char (point-min))
-
     (delete-char prompt-length)
-
     (end-of-line)
     (while (not (eobp))
       (forward-line 1)
-      (beginning-of-line) ;;  1)
-      (delete-char prompt-length)
-      (end-of-line))
-
-;;     (when extra-newline ;; doesn't seem to help
-;;       (insert "\n"))
-    ))
+      (beginning-of-line)
+      ;; Handle "blank" doctest lines.  Normally we delete "sage: ",
+      ;; but if the line is blank it won't have a trailing space
+      (delete-char (min prompt-length
+			(- (line-end-position) (point))))
+      (end-of-line))))
 
 (defun sage-test-remove-prompts (doctest)
   "Given a doctest snippet, return a string with any leading sage: and ... prompts removed."
