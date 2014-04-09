@@ -109,20 +109,11 @@ easily repeat a sage-test command."
 
 (defun sage-test-remove-prompts-in-current-buffer ()
   "Modify doctest in buffer to not have any leading sage: and ... prompts."
-  ;; (interactive) ;; XXX
-
   (let ((prompt-length nil))
-    ;; (extra-newline nil))
-
-;;     (goto-char (point-min))
-;;     (when (re-search-forward (rx (seq "sage:" (0+ anything) ":")) (point-max) t) ;; (regexp bound noerror)
-;;       (setq extra-newline t))
-
     (goto-char (point-min))
     (re-search-forward sage-test-prompt)
     (setq prompt-length (- (point) 1))
 
-    ;; (message "prompt-length %s %s" prompt-length extra-newline)
     (goto-char (point-min))
     (delete-char prompt-length)
     (end-of-line)
@@ -218,8 +209,8 @@ until they complete."
       ;; Select the result
       (let ((start (point)))
 	(while (and (not (looking-at
-		     (rx (or (and line-start (0+ whitespace) line-end)
-			     (and line-start (0+ whitespace) "sage: ")))))
+			  (rx (or (and line-start (0+ whitespace) line-end)
+				  (and line-start (0+ whitespace) "sage: ")))))
 		    (zerop (forward-line 1))))
 	;; In case we tried to move past the end of the string...
 	(beginning-of-line)
@@ -342,8 +333,8 @@ the end of the docstring."
     (save-excursion
       (save-restriction
 	(if all
-	  (let ((current-prefix-arg nil))
-	    (sage-send-all-doctest-lines))
+	    (let ((current-prefix-arg nil))
+	      (sage-send-all-doctest-lines))
 	  (sage-send-doctest-line-and-forward)))
       (setq end-point (point)))
     (goto-char end-point)))
