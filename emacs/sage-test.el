@@ -167,17 +167,8 @@ Expects that point is on the same line as a sage: prompt."
   "Send the doctest at point to the inferior sage.
 Expects that point is on the same line as a sage: prompt."
   ;; (interactive)
-  (let ((doctest (sage-test-doctest-at-point)))
-    (sage-send-command doctest t)
-
-    (let ((need-newline (string-match (rx (or ":" "\n")) doctest))
-	  (one-liner (not (string-match (rx "\n") doctest))))
-      ;; (message "need-newline %s %s _%s_" need-newline one-liner doctest)
-      (when need-newline
-	;; extra newline to clear indentation or single line function/if/try definition
-	(unless one-liner
-	  (sage-send-command "\n" t))
-	(sage-send-command "\n" t)))))
+  (let* ((doctest (sage-test-doctest-at-point)))
+    (sage-send-command (concat "%cpaste\n" doctest "\n--\n") t nil)))
 
 (defun sage-fix-doctest-at-point ()
   "Send doctest at point to Sage and replace output with the result.
