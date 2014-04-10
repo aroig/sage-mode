@@ -706,8 +706,8 @@ The major entry points are:
 `sage', to spawn a new sage session.
 
 `sage-send-buffer', to send the current buffer to the inferior sage, using
-\"load\"; `sage-send-region', to send the current region to the inferior
-sage, using \"load\"; and `sage-send-doctest', to send the docstring point is
+\"%runfile\"; `sage-send-region', to send the current region to the inferior
+sage, using \"%runfile\"; and `sage-send-doctest', to send the docstring point is
 currently looking at to the inferior sage interactively.
 
 `sage-test', to execute \"sage -t\" and friends and parse the output
@@ -762,7 +762,7 @@ Quits if `sage-quit-debugger-automatically' is non-nil or user requests quit."
 ;;;###autoload
 (defun sage-send-buffer ()
   "Send the current buffer to the inferior sage process.
-The buffer is loaded using sage's \"load\" command."
+The buffer is loaded using sage's \"%runfile\" command."
   (interactive)
   (sage-maybe-quit-debugger)
 
@@ -770,7 +770,7 @@ The buffer is loaded using sage's \"load\" command."
     ;; named file -- offer to save it, then send it
     (when (buffer-modified-p)
       (save-some-buffers))
-    (sage-send-command (format "load %s" (buffer-file-name)) t))
+    (sage-send-command (format "%%runfile %s" (buffer-file-name)) t))
   (unless (buffer-file-name)
     ;; un-named buffer -- use sage-send-region
     (sage-send-region (point-min) (point-max)))
@@ -801,7 +801,7 @@ the region \"2\" does not print \"2\"."
   (sage-maybe-quit-debugger)
 
   (let* ((f (make-temp-file "sage" nil ".sage"))
-	 (command (format "load '%s' # loading region..." f))
+	 (command (format "%%runfile '%s' # loading region..." f))
 	 (orig-start (copy-marker start)))
     (when (save-excursion
 	    (goto-char start)
