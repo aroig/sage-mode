@@ -187,9 +187,22 @@
     (when (or (not (boundp 'python-shell-enable-font-lock))
 	      python-shell-enable-font-lock)
       (sage-font-lock)))
-
+  ;; Hiding backtraces
+  (when (require 'hideshow nil t)
+    (add-to-list 'hs-special-modes-alist
+		 `(inferior-sage-mode "^--------+\n"
+				      ,inferior-sage-prompt
+				      ,comment-start
+				      sage-hs-forward-sexp
+				      nil))
+    (hs-minor-mode))
   (compilation-shell-minor-mode 1))
 
+(defun sage-hs-forward-sexp (&rest bob)
+  "Used for `hs-minor-mode' to fold backtraces."
+  (search-forward-regexp inferior-sage-prompt nil t)
+  (forward-line -1)
+  (end-of-line))
 
 (defun inferior-sage-wait-for-prompt ()
   "Wait until the Sage process is ready for input."
