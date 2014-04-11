@@ -42,10 +42,8 @@ title for easy recognition"
   (if (< arg 0)
       (sage-forward-block (- arg))
     (while (and (> arg 0)
-		(search-backward-regexp (concat "^" sage-block-delimiter) nil t))
-      (setq arg (- arg 1)))
-    (when (> arg 0)
-      (goto-char (point-min)))))
+		(search-backward-regexp (concat "^" sage-block-delimiter) nil 'move))
+      (setq arg (- arg 1)))))
 
 (defun sage-forward-block (arg)
   "Move forwards to the next beginning of a block."
@@ -59,10 +57,10 @@ title for easy recognition"
 	(forward-line))
       ;; search forward: if it worked, move to begin of delimiter, otherwise end of file
       (while (and (> arg 0)
-		  (search-forward-regexp re nil t))
+		  (search-forward-regexp re nil 'move))
 	(setq arg (- arg 1)))
-      (if (> arg 0)
-	  (goto-char (point-max))
+      ;; We successfully found something so move to the beginning of the match
+      (when (= arg 0)
 	(goto-char (match-beginning 0))))))
 
 (defun sage-send-current-block ()
