@@ -167,13 +167,14 @@
   ;; I type x? a lot
   (set 'comint-input-filter 'sage-input-filter)
 
+  ;; Old python.el doesn't define comment start, which then confuses up hs-minor-mode
+  (set (make-local-variable 'comment-start) "#")
   (make-local-variable 'compilation-error-regexp-alist)
   (make-local-variable 'compilation-error-regexp-alist-alist)
   (add-to-list 'compilation-error-regexp-alist-alist sage-test-compilation-regexp)
   (add-to-list 'compilation-error-regexp-alist 'sage-test-compilation)
   (add-to-list 'compilation-error-regexp-alist-alist sage-build-compilation-regexp)
   (add-to-list 'compilation-error-regexp-alist 'sage-build-compilation)
-
   (pcomplete-sage-setup)
 
   ;; The new python.el does things a little differently wrt prompts.
