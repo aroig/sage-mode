@@ -141,7 +141,14 @@
 	 :visible (not sage-view-inline-output-enabled)]
 	["Disable Typeset Output" sage-view-disable-inline-output
 	 :help "Disable typesetting of output in the inferior Sage buffer."
-	 :visible sage-view-inline-output-enabled]))
+	 :visible sage-view-inline-output-enabled]
+	"-"
+	["Hide all backtraces" hs-hide-all
+	 :help "Hide all backtraces to reduce clutter"]
+	["Show all backtraces" hs-show-all
+	 :help "Show all backtraces"]
+	["Show current backtrace" hs-show-block
+	 :help "Show all backtraces"]))
     map)
   "Keymap for `inferior-sage-mode'.")
 
