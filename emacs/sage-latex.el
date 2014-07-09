@@ -97,6 +97,18 @@ Currently only `org-latex-to-pdf-process' is affected."
 ;;;###autoload
 (eval-after-load 'org-latex '(sage-org-latex-setup))
 
+;;; provide MMM (multiple major mode) support
+(when (require 'mmm-auto nil 'noerror)
+  (mmm-add-classes
+   '((sagetex
+      :submode sage-mode
+      :delimiter-mode nil
+      :front "\\\\begin{sage\\(block\\|silent\\|verbatim\\|example\\|commandline\\)}"
+      :back "\\\\end{sage~1}"
+      :save-matches 1)))
+  (mmm-add-mode-ext-class nil "\\.tex\\'" 'sagetex)
+  (setq mmm-global-mode 'maybe))
+
 (provide 'sage-latex)
 
 ;;; sage-latex.el ends here
