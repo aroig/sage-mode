@@ -98,16 +98,18 @@ Currently only `org-latex-to-pdf-process' is affected."
 (eval-after-load 'org-latex '(sage-org-latex-setup))
 
 ;;; provide MMM (multiple major mode) support
-(when (require 'mmm-auto nil 'noerror)
-  (mmm-add-classes
-   '((sagetex
-      :submode sage-mode
-      :delimiter-mode nil
-      :front "\\\\begin{sage\\(block\\|silent\\|verbatim\\|example\\|commandline\\)}"
-      :back "\\\\end{sage~1}"
-      :save-matches 1)))
-  (mmm-add-mode-ext-class nil "\\.tex\\'" 'sagetex)
-  (setq mmm-global-mode 'maybe))
+(eval-after-load 'mmm-auto
+  '(progn
+     (mmm-add-classes
+      '((sagetex
+	 :submode sage-mode
+	 :delimiter-mode nil
+	 :front "\\\\begin{sage\\(block\\|silent\\|verbatim\\|example\\|commandline\\)}"
+	 :back "\\\\end{sage~1}"
+	 :save-matches 1)))
+     (mmm-add-mode-ext-class nil "\\.tex\\'" 'sagetex)
+     (unless mmm-global-mode
+       (message "Multiple modes not enabled, please customize `mmm-global-mode' to enable."))))
 
 (provide 'sage-latex)
 
