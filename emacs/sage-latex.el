@@ -18,7 +18,8 @@
        (require 'tex nil t)
        (require 'tex-buf nil t))
   (and (require 'org nil t)
-       (require 'org-latex nil t)))
+       (require 'org-latex nil t))
+  (require 'mmm-auto nil t))
 
 ;;;###autoload
 (defun sage-run-sagetex (name command file)
