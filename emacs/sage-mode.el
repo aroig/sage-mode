@@ -82,6 +82,7 @@
     (define-key map [(control c) (control j)] 'sage-send-doctest)
     (define-key map [(control c) (control t)] 'sage-test)
     (define-key map [(control c) (control b)] 'sage-build)
+    (define-key map [(control c) (control z)] 'run-sage)
     (define-key map [(control h) (control f)] 'ipython-describe-symbol)
     (define-key map [(control h) (control g)] 'sage-find-symbol-other-window)
 
@@ -544,6 +545,7 @@ See variable `python-buffer'.  Starts a new process if necessary."
 	 ;; otherwise, start a new sage and try again
 	 (run-sage nil sage-command t)
 	 (python-proc))))
+
 
 ;; Use our version of python-proc (even though I have my doubts)
 ;; for the new fgallina python.el
