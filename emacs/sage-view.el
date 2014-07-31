@@ -92,11 +92,14 @@ Each of these can be enabled or disabled later by calling
   :group 'sage-view)
 
 (defvar sage-view-start-string "<html><\\(?:span class=\"math\"\\|script type=\"math/tex\"\\)>"
-  "HTML tags that identify the begining of a math formula in Sage output."
-)
+  "HTML tags that identify the begining of a math formula in Sage output.")
 
 (defvar sage-view-final-string "</\\(?:span\\|script\\)></html>"
   "HTML tags that identify the end of a math formula in Sage output.")
+
+(defvar sage-view-plot-regex
+  "<html>\\(?:<font color='[^']*'>\\)?<img src='cell://\\(sage[0-9]+.png\\)'>\\(?:</font>\\)?</html>"
+  "HTML tags that identify a plot in Sage output.")
 
 (defvar sage-view-dir-name nil)
 (defvar sage-view-inline-plots-enabled nil)
@@ -261,7 +264,6 @@ See also `sage-view-output-filter'."
       (overlay-put ov 'keymap map)
       (sage-view-process-overlay ov))))
 
-(autoload 'dired-rename-file "dired-aux")
 (defun sage-view-output-filter-process-inline-plots (string)
   "Generate and place one overlay image for one inline plot,
 found by looking for a particular png file in directory
@@ -270,24 +272,31 @@ found by looking for a particular png file in directory
 This function expects the buffer to be narrowed to just the
 current output; see `sage-view-output-filter' for how to do
 that."
-  ;; we need to foil emacs' image cache, which doesn't reload files with the same name
-  (let* ((pngname (format "%s/sage-view.png" sage-view-dir-name))
-	 (base (expand-file-name (make-temp-name "sage-view-plot_") sage-view-dir-name))
-	 (pngname2 (concat base ".png")))
-    (when (and pngname
-	       (file-exists-p pngname)
-	       (file-readable-p pngname))
-      ;; the found branch
-      (dired-rename-file pngname pngname2 t)
-      (goto-char comint-last-input-end)
-      (let ((im (create-image pngname2 'png))
-	    (sage-view-inline-plot-overlay
-	     (make-overlay (- (point) 1) (point) nil nil nil))) ;; adding a margin screws this up
-	(overlay-put sage-view-inline-plot-overlay 'display im)
-	(overlay-put sage-view-inline-plot-overlay 'before-string "\n\n") ;; help alignment as much as possible
-	(overlay-put sage-view-inline-plot-overlay 'after-string "\n\n")  ;; but emacs doesn't handle this right IMHO
-	;; (dired-delete-file pngname2 'always) ;; causes problems with emacs image loading
-	))))
+  (goto-char (point-min))
+  (while (re-search-forward sage-view-plot-regex (point-max) t)
+    (let* ((html-beg (match-beginning 0))
+           (html-end (match-end 0))
+	   (pngname (match-string-no-properties 1))
+	   (base (expand-file-name (make-temp-name "sage-view-plot_") sage-view-dir-name))
+	   (pngname2 (concat base ".png")))
+      (when (and pngname
+		 (file-exists-p pngname)
+		 (file-readable-p pngname))
+	;; the found branch
+	(rename-file pngname pngname2 t)
+	(goto-char comint-last-input-end)
+	(let ((im (create-image pngname2 'png))
+	      (ov (make-overlay html-beg
+				html-end
+				nil nil nil))
+	      (map (make-sparse-keymap)))
+	  (overlay-put ov 'display im)
+	  ;; help alignment as much as possible
+	  (overlay-put ov 'before-string "\n")
+	  (define-key map [mouse-3]
+	    `(lambda (event) (interactive "e")
+	       (sage-view-plot-context-menu ,ov event)))
+	  (overlay-put ov 'keymap map))))))
 
 (defun sage-view-output-filter (string)
   "Generate and place overlay images for inline output and inline plots.
@@ -339,19 +348,7 @@ when `sage-view' mode is enabled and sage is running."
 WARNING: this communicates with the sage process.  Only use this
 when `sage-view' mode is enabled and sage is running."
   (interactive)
-  (sage-send-command "sage.plot.plot.DOCTEST_MODE = True;" nil t)
-  ;; sage 4.7
-  (sage-send-command
-   (format "sage.plot.plot.DOCTEST_MODE_FILE = '%s/sage-view.png';"
-	   sage-view-dir-name)
-   nil t)
-  ;; sage 5.0
-  (sage-send-command
-   (format "if hasattr(sage.plot,'graphics'): sage.plot.graphics.DOCTEST_MODE_FILE = '%s/sage-view.png';\n"
-	   sage-view-dir-name)
-   nil t)
-  ;; sage 5.something
-  (sage-send-command "if hasattr(sage,'doctest'): sage.doctest.DOCTEST_MODE = True;\n" nil t)
+  (sage-send-command "sage.plot.plot.EMBEDDED_MODE = True;" nil t)
   (setq sage-view-inline-plots-enabled t)
   (sage-view-update-modeline))
 
@@ -479,6 +476,14 @@ Make sure that there is a valid image associated with OV with
      "--"
      ["Customize Conversion Options" (lambda () (interactive)
 				       (customize-group 'sage-view t))
+      `(sage-view-overlay-activep ,ov)])
+   ev))
+
+(defun sage-view-plot-context-menu (ov ev)
+  "Pop up a menu for OV at position EV."
+  (popup-menu
+   `("Sage View Mode"
+     ["Save As..." (lambda () (interactive) (sage-view-save-image ,ov))
       `(sage-view-overlay-activep ,ov)])
    ev))
 
