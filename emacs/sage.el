@@ -32,7 +32,7 @@
 
 ;;; Code:
 
-(defconst sage-mode-version "0.11"
+(defconst sage-mode-version "0.12"
   "Version of `sage-mode'.")
 
 (defgroup sage nil "Major mode for editing and running Sage"
