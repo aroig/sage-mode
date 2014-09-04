@@ -91,6 +91,80 @@ Each of these can be enabled or disabled later by calling
 		 (const :tag "Both" t))
   :group 'sage-view)
 
+(defcustom sage-view-inline-plots-method 'embedded-mode
+  "Determine how plots are included inline.
+
+This has an effect when enabling and disabling inline plots and
+changing it's value before disabling will disable the new method,
+leaving the old method in place.
+
+If equal to the symbol `emacsclient' then it will use
+emacsclient (as specified by `sage-view-emacsclient') to open the
+file.  This should be robust across Sage versions, but requires
+`sage-view-emacsclient' to be set correctly in order to work.
+
+If equal to the symbol `emacsclient-window' then it will use
+emacsclient as above, but open in a different window rather than
+inline with the rest of the output.
+
+If equal to the symbol `doctest-mode' then it will use
+DOCTEST_MODE.  This is known to work on older versions of Sage,
+but has problems in recent versions.
+
+If equal to the symbol `embedded-mode' then it will use
+EMBEDDED_MODE.  This is known to cause problems with some Sage
+functionality like trace, since Sage thinks it's running in a
+browser."
+  :type '(choice (const :tag "Emacs client inline" emacsclient)
+		 (const :tag "Emacs client in separate window" emacsclient-window)
+		 (const :tag "Doctest mode" doctest-mode)
+		 (const :tag "Embedded mode" embedded-mode))
+  :set (lambda (symbol value)
+	 (if (not (buffer-live-p sage-buffer))
+	     (set symbol value)
+	   (with-current-buffer sage-buffer
+	     (let ((enabled sage-view-inline-plots-enabled))
+	       (when enabled
+		 (sage-view-disable-inline-plots))
+	       (set symbol value)
+	       (when enabled
+		 (sage-view-enable-inline-plots))))))
+  :group 'sage-view)
+
+(defcustom sage-view-emacsclient
+  ;; Magit goes to quite some length to find the right executable, so
+  ;; use that if we have it.
+  (or (and (fboundp 'magit-locate-emacsclient)
+	   (magit-locate-emacsclient))
+      (and invocation-directory
+	   (file-executable-p (concat invocation-directory "emacsclient"))
+	   (concat invocation-directory "emacsclient"))
+      (and invocation-directory
+	   (file-executable-p (concat invocation-directory "bin/emacsclient"))
+	   (concat invocation-directory "bin/emacsclient"))
+      (executable-find "emacsclient"))
+  "The emacslient executable to use for viewing plots inline.
+
+If `sage-view-inline-plots-method' is set to `emacsclient' or
+`emacsclient-window', then this is used.  If this is set
+incorrectly, then it's known to cause issues, at least on OS X."
+  :type 'string
+  :group 'sage-view)
+
+(defcustom sage-view-emacsclient-wrapper
+  (concat (file-name-directory
+	   (or load-file-name
+	       (buffer-file-name))) "sage-view.sh")
+  "A wrapper script around emacsclient for when `sage-view-inline-plots-method' is emacsclient.
+
+The script calls the function `sage-view-handle-emacslient'
+instead of simply opening the image which is what happens when
+`sage-view-inline-plots-method' is emacsclient.
+
+In most cases you should not have to change this."
+  :type 'string
+  :group 'sage-view)
+
 (defvar sage-view-start-string "<html><\\(?:span class=\"math\"\\|script type=\"math/tex\"\\)>"
   "HTML tags that identify the begining of a math formula in Sage output.")
 
@@ -348,7 +422,38 @@ when `sage-view' mode is enabled and sage is running."
 WARNING: this communicates with the sage process.  Only use this
 when `sage-view' mode is enabled and sage is running."
   (interactive)
-  (sage-send-command "sage.plot.plot.EMBEDDED_MODE = True;" nil t)
+  (cond
+   ((or (eq sage-view-inline-plots-method 'emacsclient)
+	(eq sage-view-inline-plots-method 'emacsclient-window))
+    (when (not (server-running-p))
+      (error "Server appears to not be running.  Try adding (server-start) to your .emacs"))
+    ;; Store the old viewer
+    (sage-send-command "_emacs_sage_viewer_ = _emacs_sage_viewer_ if '_emacs_sage_viewer_' in globals() else sage.misc.viewer.viewer.png_viewer()" nil t)
+    (sage-send-command (concat "sage.misc.viewer.viewer.png_viewer('''"
+			       (when (eq sage-view-inline-plots-method 'emacsclient)
+				 sage-view-emacsclient-wrapper)
+			       " "
+			       sage-view-emacsclient
+			       "''')")
+		       nil t))
+   ((eq sage-view-inline-plots-method 'embedded-mode)
+    (sage-send-command "sage.plot.plot.EMBEDDED_MODE = True;" nil t))
+   ((eq sage-view-inline-plots-method 'doctest-mode)
+    (sage-send-command "sage.plot.plot.DOCTEST_MODE = True;" nil t)
+    ;; sage 4.7
+    (sage-send-command
+     (format "sage.plot.plot.DOCTEST_MODE_FILE = '%s/sage-view.png';"
+	     sage-view-dir-name)
+     nil t)
+    ;; sage 5.0
+    (sage-send-command
+     (format "if hasattr(sage.plot,'graphics'): sage.plot.graphics.DOCTEST_MODE_FILE = '%s/sage-view.png';\n"
+	     sage-view-dir-name)
+     nil t)
+    ;; sage 5.something
+    (sage-send-command "if hasattr(sage,'doctest'): sage.doctest.DOCTEST_MODE = True;\n" nil t))
+   (t
+    (error "Unknown value for `sage-view-inline-plots-method'")))
   (setq sage-view-inline-plots-enabled t)
   (sage-view-update-modeline))
 
@@ -358,15 +463,47 @@ when `sage-view' mode is enabled and sage is running."
 WARNING: this communicates with the sage process.  Only use this
 when `sage-view' mode is enabled and sage is running."
   (interactive)
-  (sage-send-command "sage.plot.plot.DOCTEST_MODE = False;" nil t)
-  ;; sage 4.7
-  (sage-send-command "sage.plot.plot.DOCTEST_MODE_FILE = None;" nil t)
-  ;; sage 5.0
-  (sage-send-command "if hasattr(sage.plot,'graphics'): sage.plot.graphics.DOCTEST_MODE_FILE = None;\n" nil t)
-  ;; sage 5.something
-  (sage-send-command "if hasattr(sage,'doctest'): sage.doctest.DOCTEST_MODE = False;\n" nil t)
+  (cond
+   ((or (eq sage-view-inline-plots-method 'emacsclient)
+	(eq sage-view-inline-plots-method 'emacsclient-window))
+    (sage-send-command (concat "sage.misc.viewer.viewer.png_viewer(_emacs_sage_viewer_)")
+		       nil t))
+   ((eq sage-view-inline-plots-method 'embedded-mode)
+    (sage-send-command "sage.plot.plot.EMBEDDED_MODE = False;" nil t))
+   ((eq sage-view-inline-plots-method 'doctest-mode)
+    (sage-send-command "sage.plot.plot.DOCTEST_MODE = False;" nil t)
+    ;; sage 4.7
+    (sage-send-command "sage.plot.plot.DOCTEST_MODE_FILE = None;" nil t)
+    ;; sage 5.0
+    (sage-send-command "if hasattr(sage.plot,'graphics'): sage.plot.graphics.DOCTEST_MODE_FILE = None;\n" nil t)
+    ;; sage 5.something
+    (sage-send-command "if hasattr(sage,'doctest'): sage.doctest.DOCTEST_MODE = False;\n" nil t))
+   (t
+    (error "Unknown value for `sage-view-inline-plots-method'")))
   (setq sage-view-inline-plots-enabled nil)
   (sage-view-update-modeline))
+
+(defun sage-view-handle-emacslient (image-file)
+  (when (buffer-live-p sage-buffer)
+    (with-current-buffer sage-buffer
+      (save-excursion
+	(goto-char comint-last-output-start)
+	;; Go to a blank line (where it should be output, but if not don't worry)
+	(re-search-backward "^$" comint-last-input-end nil)
+	(let* ((inhibit-read-only t)
+	       (im (create-image image-file 'png))
+	       (p (point))
+	       (junk (insert (concat "image:" image-file)))
+	       (ov (make-overlay p (point) nil nil nil))
+	       (map (make-sparse-keymap)))
+	  (overlay-put ov 'display im)
+	  ;; help alignment as much as possible
+	  (overlay-put ov 'before-string "\n")
+	  (overlay-put ov 'after-string "\n")
+	  (define-key map [mouse-3]
+	    `(lambda (event) (interactive "e")
+	       (sage-view-plot-context-menu ,ov event)))
+	  (overlay-put ov 'keymap map))))))
 
 (defun sage-view-create-temp ()
   "Create a temporary directory and set `sage-view-dir-name'
