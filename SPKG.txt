@@ -56,7 +56,8 @@ Boston, MA 02110-1301, USA.
 ;; If you want sage-view to typeset all your output and display plot()
 ;; commands inline, uncomment the following line and configure sage-view:
 ;; (add-hook 'sage-startup-after-prompt-hook 'sage-view)
-;; In particular customize the variable sage-view-default-commands.
+;; In particular customize the variables `sage-view-default-commands'
+;; and `sage-view-inline-plots-method'.
 ;; Using sage-view to typeset output requires a working LaTeX
 ;; installation with the preview package.
 
