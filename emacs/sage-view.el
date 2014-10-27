@@ -91,6 +91,8 @@ Each of these can be enabled or disabled later by calling
 		 (const :tag "Both" t))
   :group 'sage-view)
 
+(defvar sage-view-inline-plots-enabled nil)
+(defvar sage-view-inline-output-enabled nil)
 (defcustom sage-view-inline-plots-method 'embedded-mode
   "Determine how plots are included inline.
 
@@ -176,8 +178,6 @@ In most cases you should not have to change this."
   "HTML tags that identify a plot in Sage output.")
 
 (defvar sage-view-dir-name nil)
-(defvar sage-view-inline-plots-enabled nil)
-(defvar sage-view-inline-output-enabled nil)
 
 (defun sage-view-latex->pdf (ov)
   "Start conversion of the LATEX document associated to OV to PDF.
