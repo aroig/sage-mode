@@ -189,8 +189,13 @@
   ;; In particular it has debugger and normal operation separated.
   ;; If we don't set them correctly things like completion don't work.
   (with-no-warnings ;; They give warnings with old python.el
+    ;; Some similar prompt variables are set in the top level of
+    ;; sage-compat.el so that when inferior-python-mode is called it
+    ;; will have the right prompts
     (setq python-shell-prompt-regexp ">>> \\|\\(sage: \\)+")
     (setq python-shell-prompt-pdb-regexp "[(<]*[Ii]?[PpGg]db[>)]+ ")
+    (setq python-shell-prompt-block-regexp "\\.\\.\\.\\(\\.:\\)? ")
+    (python-shell-prompt-set-calculated-regexps)
 
     ;; Respect python-shell-enable-font-lock
     (when (or (not (boundp 'python-shell-enable-font-lock))

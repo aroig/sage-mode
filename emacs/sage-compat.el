@@ -84,6 +84,30 @@ Do nothing if not in string."
 (define-obsolete-function-alias 'pyrex-end-of-defun 'cython-end-of-defun "0.10")
 (define-obsolete-function-alias 'pyrex-current-defun 'cython-current-defun "0.10")
 
+;; Changes to python.el caused sage to freeze because it wasn't
+;; looking for the correct prompt
+(when (boundp 'python-shell-prompt-input-regexps)
+  (add-to-list 'python-shell-prompt-input-regexps "sage: ")
+  (add-to-list 'python-shell-prompt-input-regexps "\\.\\.\\.\\.: ")
+  (python-shell-prompt-set-calculated-regexps))
+
+(when (string-match "24\\.4\\.[0-9.]*" emacs-version)
+  (defun python-shell-get-buffer ()
+    "Return inferior Python buffer for current buffer.
+If current buffer is in `inferior-python-mode', return it."
+    (if (derived-mode-p 'inferior-python-mode)
+	(current-buffer)
+      (let* ((dedicated-proc-name (python-shell-get-process-name t))
+	     (dedicated-proc-buffer-name (format "*%s*" dedicated-proc-name))
+	     (global-proc-name  (python-shell-get-process-name nil))
+	     (global-proc-buffer-name (format "*%s*" global-proc-name))
+	     (dedicated-running (comint-check-proc dedicated-proc-buffer-name))
+	     (global-running (comint-check-proc global-proc-buffer-name)))
+	;; Always prefer dedicated
+	(or (and dedicated-running dedicated-proc-buffer-name)
+	    (and global-running global-proc-buffer-name))))))
+
+
 (provide 'sage-compat)
 
 ;;; sage-compat.el ends here
