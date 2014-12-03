@@ -48,10 +48,8 @@ else
     echo Set the EMACS environment variable to compile with a different emacs.
     $EMACS -batch -L $INSTALL_DIR/ -f batch-byte-compile $INSTALL_DIR/*.el
 
-    # Trick the shell into expanding $INSTALL_DIR and $SAGE_ROOT
+    # Extract and print the .emacs portion of SPKG.txt
     export INSTALL_DIR
-    sh -c "cat <<EOF
-$(perl -ne 'print if (/Start .emacs/../End .emacs/)' SPKG.txt)
-EOF"
+    perl -ne 'if (/Start .emacs/../End .emacs/) { s/\$(\w+)/$ENV{$1}/; print; }' SPKG.txt
 
 fi
