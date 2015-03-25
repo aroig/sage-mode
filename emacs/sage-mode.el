@@ -771,6 +771,9 @@ and restart a fresh inferior sage in an existing buffer.
   ;; It's only used to help get defaults in some cases
   (defvar python-source-modes nil))
 
+(defvar sage-load-file-command "%%runfile %s"
+  "Format string to make sage load a filename")
+
 (defun sage-quit-debugger ()
   "Quit debugger if looking at a debugger prompt."
   (when (sage-last-prompt-is-debugger)
@@ -798,7 +801,7 @@ The buffer is loaded using sage's \"%runfile\" command."
     ;; named file -- offer to save it, then send it
     (when (buffer-modified-p)
       (save-some-buffers))
-    (sage-send-command (format "%%runfile %s" (buffer-file-name)) t))
+    (sage-send-command (format sage-load-file-command (buffer-file-name)) t))
   (unless (buffer-file-name)
     ;; un-named buffer -- use sage-send-region
     (sage-send-region (point-min) (point-max)))
@@ -829,7 +832,7 @@ the region \"2\" does not print \"2\"."
   (sage-maybe-quit-debugger)
 
   (let* ((f (make-temp-file "sage" nil ".sage"))
-	 (command (format "%%runfile '%s' # loading region..." f))
+	 (command (format sage-load-file-command f))
 	 (orig-start (copy-marker start)))
     (when (save-excursion
 	    (goto-char start)
