@@ -489,7 +489,7 @@ when `sage-view' mode is enabled and sage is running."
       (save-excursion
 	(goto-char comint-last-output-start)
 	;; Go to a blank line (where it should be output, but if not don't worry)
-	(re-search-backward "^$" comint-last-input-end nil)
+	(re-search-backward "^$" comint-last-input-end t)
 	(let* ((inhibit-read-only t)
 	       (im (create-image image-file 'png))
 	       (p (point))
