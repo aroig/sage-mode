@@ -1,6 +1,12 @@
 Introduction to sage-mode
 =========================
 
+You might also be interested in
+[sage-shell-mode](https://github.com/stakemori/sage-shell-mode), a
+completely independent package for interacting with Sagemath.  See
+[the Sagemath wiki](http://wiki.sagemath.org/SageModeComparison) for a
+comparison.
+
 Installation and setup
 -----------------------
 There are three possibilities for installing sage-mode:
