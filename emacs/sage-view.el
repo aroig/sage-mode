@@ -177,6 +177,10 @@ In most cases you should not have to change this."
   "<html>\\(?:<font color='[^']*'>\\)?<img src='cell://\\(sage[0-9]+.png\\)'>\\(?:</font>\\)?</html>"
   "HTML tags that identify a plot in Sage output.")
 
+(defvar sage-view-output-regexp
+  "BEGIN_TEXT:\\(\\(?:.\\|\n\\)*?\\):END_TEXT\nBEGIN_LATEX:\\(\\(?:.\\|\n\\)*?\\):END_LATEX"
+  "Regular expression matching typeset output from BackendEmacs.")
+
 (defvar sage-view-dir-name nil)
 
 (defun sage-view-latex->pdf (ov)
@@ -336,6 +340,32 @@ See also `sage-view-output-filter'."
         `(lambda (event) (interactive "e")
            (sage-view-context-menu ,ov event)))
       (overlay-put ov 'keymap map)
+      (sage-view-process-overlay ov)))
+  ;; Sage 6.6 and on
+  (goto-char (point-min))
+  (while (re-search-forward sage-view-output-regexp (point-max) t)
+    (let* ((full-beg (match-beginning 0))
+           (full-end (match-end 0))
+	   (text-beg (match-beginning 1))
+           (text-end (match-end 1))
+	   (latex-beg (match-beginning 2))
+           (latex-end (match-end 2))
+	   (text (buffer-substring-no-properties text-beg text-end))
+	   (latex (buffer-substring-no-properties latex-beg latex-end))
+           (ov (make-overlay full-beg full-end
+			     nil nil nil))
+	   (map (make-sparse-keymap)))
+      ;; Delete everything except the text
+      (delete-region text-end full-end)
+      (delete-region full-beg text-beg)
+      ;; Populate the overlay
+      (overlay-put ov 'help-echo "mouse-3: Open contextual menu")
+      (overlay-put ov 'text text)
+      (overlay-put ov 'math latex)
+      (define-key map [mouse-3]
+        `(lambda (event) (interactive "e")
+           (sage-view-context-menu ,ov event)))
+      (overlay-put ov 'keymap map)
       (sage-view-process-overlay ov))))
 
 (defun sage-view-output-filter-process-inline-plots (string)
@@ -383,7 +413,8 @@ Function to be inserted in `comint-output-filter-functions'."
       (when sage-view-inline-plots-enabled
 	(sage-view-output-filter-process-inline-plots string))
       (when (and sage-view-inline-output-enabled
-		 (string-match sage-view-final-string string))
+		 (or (string-match sage-view-final-string string)
+		     (string-match ":END_LATEX" string)))
 	(sage-view-output-filter-process-inline-output string)))))
 
 ;;;###autoload
@@ -396,6 +427,11 @@ when `sage-view' mode is enabled and sage is running."
   (sage-send-command "if hasattr(sys.displayhook, 'set_display'): pretty_print_default(True)" nil t)
   ;; sage 5.12
   (sage-send-command "import IPython.core.ipapi; IPython.core.ipapi.get().magic('display typeset')" nil t)
+  ;; Sage 6.6
+  (sage-send-command "from sage.repl.rich_output.backend_emacs import BackendEmacs" nil t)
+  (sage-send-command "from sage.repl.rich_output import get_display_manager" nil t)
+  (sage-send-command "get_display_manager().switch_backend(BackendEmacs(),shell=get_ipython())" nil t)
+  ;; fallthrough
   ;; Sage 6.2
   (sage-send-command "get_ipython().magic('display typeset')" nil t)
   (setq sage-view-inline-output-enabled t)
@@ -548,7 +584,14 @@ writable directory."
    "" str))
 
 (defun sage-view-copy-text (ov)
-  "Copy LATEX source of OV into the kill buffer."
+  "Copy text source of OV into the kill buffer."
+  (let ((text (overlay-get ov 'text)))
+    (if text
+	(kill-new text)
+      (message "No text available"))))
+
+(defun sage-view-copy-latex (ov)
+  "Copy LaTeX source of OV into the kill buffer."
   (let ((text (overlay-get ov 'math)))
     (if text
 	(kill-new (sage-view-cleanup-copied-text text))
@@ -601,7 +644,8 @@ Make sure that there is a valid image associated with OV with
   (popup-menu
    `("Sage View Mode"
      ["Regenerate" (lambda () (interactive) (sage-view-regenerate ,ov))]
-     ["Copy LaTeX" (lambda () (interactive) (sage-view-copy-text ,ov))]
+     ["Copy Text"  (lambda () (interactive) (sage-view-copy-text ,ov))]
+     ["Copy LaTeX" (lambda () (interactive) (sage-view-copy-latex ,ov))]
      ["Save As..." (lambda () (interactive) (sage-view-save-image ,ov))
       `(sage-view-overlay-activep ,ov)]
      ["Zoom in" (lambda (multiplier) (interactive "p")
