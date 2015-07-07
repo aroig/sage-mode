@@ -575,13 +575,12 @@ See variable `python-buffer'.  Starts a new process if necessary."
 
 (defun sage-create-new-sage (cmd &optional new)
   (interactive
-   (progn
-     (let ((default (or cmd sage-command)))
+   (let ((default (or cmd sage-command)))
        (list (read-from-minibuffer "Run sage (like this): "
 				   default
 				   nil nil 'sage-run-history
 				   default)
-	     current-prefix-arg))))
+	     current-prefix-arg)))
   (unless cmd
     (setq cmd sage-command))
   (with-current-buffer
