@@ -60,12 +60,47 @@
 
 (defcustom sage-view-latex-head
   "\\documentclass{article}
-\\usepackage[active, tightpage, pdftex, displaymath]{preview}
+% packages sage uses
 \\usepackage{amstext}
+\\usepackage{amsmath}
+\\usepackage{amssymb}
+\\usepackage{amsfonts}
+\\usepackage{graphicx}
+\\usepackage{mathrsfs}
+\\usepackage[utf8]{inputenc}
+\\usepackage[T1]{fontenc}
+% we need preview
+\\usepackage[active, tightpage, pdftex, displaymath]{preview}
+% macros sage uses
+\\newcommand{\\ZZ}{\\Bold{Z}}
+\\newcommand{\\NN}{\\Bold{N}}
+\\newcommand{\\RR}{\\Bold{R}}
+\\newcommand{\\CC}{\\Bold{C}}
+\\newcommand{\\QQ}{\\Bold{Q}}
+\\newcommand{\\QQbar}{\\overline{\\QQ}}
+\\newcommand{\\GF}[1]{\\Bold{F}_{#1}}
+\\newcommand{\\Zp}[1]{\\ZZ_{#1}}
+\\newcommand{\\Qp}[1]{\\QQ_{#1}}
+\\newcommand{\\Zmod}[1]{\\ZZ/#1\\ZZ}
+\\newcommand{\\CDF}{\\Bold{C}}
+\\newcommand{\\CIF}{\\Bold{C}}
+\\newcommand{\\CLF}{\\Bold{C}}
+\\newcommand{\\RDF}{\\Bold{R}}
+\\newcommand{\\RIF}{\\Bold{I} \\Bold{R}}
+\\newcommand{\\RLF}{\\Bold{R}}
+\\newcommand{\\CFF}{\\Bold{CFF}}
+% \\Bold is included in the output everytime since it's part of sage_configurable_latex_macros
+%\\newcommand{\\Bold}[1]{\\mathbf{#1}}
 \\begin{document}
 \\begin{preview}
 \\begin{math}\n"
-  "String to be inserted at the top of a LaTeX document."
+  "String to be inserted at the top of a LaTeX document.
+
+This should be similar to sage.misc.latex.LATEX_HEADER but also
+include a \\begin{document}, a \\begin{preview} and the macros
+from sage.misc.latex_macros.sage_latex_macros(), except those in
+sage_configurable_latex_macros, since those are included as part
+of every output."
   :type 'string
   :group 'sage-view)
 
