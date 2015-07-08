@@ -36,7 +36,7 @@ rm -f $INSTALL_DIR/*.elc
 
 # Byte compile -- this can fail since we don't require emacs for Sage
 EMACS=${EMACS-emacs}
-$EMACS -batch 2> /dev/null > /dev/null
+sage-native-execute $EMACS -batch 2> /dev/null > /dev/null
 if [ $? -ne 0 ]; then
     echo
     echo WARNING: Could not find emacs at "'$EMACS'"
@@ -46,7 +46,7 @@ else
 
     echo Byte compiling sage-mode with "'$EMACS'"
     echo Set the EMACS environment variable to compile with a different emacs.
-    $EMACS -batch -L $INSTALL_DIR/ -f batch-byte-compile $INSTALL_DIR/*.el
+    sage-native-execute $EMACS -batch -L $INSTALL_DIR/ -f batch-byte-compile $INSTALL_DIR/*.el
 
     # Extract and print the .emacs portion of SPKG.txt
     export INSTALL_DIR
